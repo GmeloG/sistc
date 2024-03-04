@@ -15,11 +15,13 @@
 
 #include <stdio.h> 
 #include <stdlib.h> 
-#include <unistd.h> 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h> 
  
 int main(int argc, char *argv[]) { 
   
-  __pid_t r;
+  pid_t r;
 
   printf("\nProcesso %d a executar %s\n\n", getpid(), argv[0]); 
    
