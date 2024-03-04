@@ -4,24 +4,29 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-int i = 0;
+int i = 0;      //variavel global
 int main()
 {
     pid_t r = fork();
+
+    //processo filho
     if (r == 0)
     {
         sleep(10);
-        printf("%d: %d %d\n", getpid(), i, r);
-        return 0;
+        printf("%d: %d %d\n", getpid(), i, r);  //get pid processo do filho, 0 ,0 
+        return 0;                               //desbloqueia o wait(NULL)
     }
+
+    //processo pai
     i = i + 1;
-    wait(NULL);
-    printf("%d: %d %d\n", getpid(), i, r);
+    wait(NULL);         //espera que um processo filho acabe
+    printf("%d: %d %d\n", getpid(), i, r);      //get pid processo do pai, r tem o valor do pid do filho 
     return 0;
 }
 
 
 /*
+        Exercicio de exame
         a) Indique a sucessão de mensagens impressas no ecrã durante a execução do programa. 
         
         3399: 0 0
