@@ -10,6 +10,13 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+void *shmalloc(size_t size)
+{
+    return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+}
 
 #define NELEM 20
 
@@ -18,7 +25,7 @@ int main(int argc, char *argv[])
     double *dados;
     pid_t r1, r2;
 
-    dados = malloc(NELEM * sizeof(double));
+    dados = shmalloc(NELEM * sizeof(double));
     for (int i = 0; i < NELEM; ++i)
         dados[i] = i;
 
