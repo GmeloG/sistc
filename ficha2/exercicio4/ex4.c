@@ -56,21 +56,11 @@ int main(int argc, char *argv[])
 }
 
 /*
-        Na linha 9, é armazenada em dados uma sequência de valores correspondente à
-    progressão aritmética 0, 1, … , 19. De seguida todos os valores são multiplicados por 2,
-    sendo que, cada metade dos elementos é processada num diferente processo (linhas 13,
-    14, 20 e 21).
-
-
-        Qual a sequência de valores impressa por este programa (linhas 28 e 29)? Por que motivo
-    o vetor dados mantém os valores iniciais?
-
-    0.000000 1.000000 2.000000 3.000000 4.000000 5.000000 6.000000 7.000000 8.000000
-    9.000000 10.000000 11.000000 12.000000 13.000000 14.000000 15.000000 16.000000 17.000000
-    18.000000 19.000000
-
-        No primeiro processo filho a primeira metade do vetor é multiplicada por 2, e no segundo processo
-    filho a segunda metade do vetor é multiplicada por 2. Depois ao fazer o exit o vetores dos processo
-    filhos são eliminados. E o program imprime o vector do processo pai que não foi alterado.
+        Como agora memoria dos vetores é partilha da pela função nmap o 
+        vector dados contem a ultimas alteraçoes feitas.
+    
+       0.000000 2.000000 4.000000 6.000000 8.000000 10.000000 12.000000
+       14.000000 16.000000 18.000000 20.000000 22.000000 24.000000 
+       26.000000 28.000000 30.000000 32.000000 34.000000 36.000000 38.000000 
 
 */
