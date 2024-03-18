@@ -50,16 +50,15 @@ int main(int argc, char *argv[])
     {
         for (int i = 0; i < 10; ++i)
         {
-            sleep(2);
-            printf("Novo processo, com PID = %d (\"filho\" de %d)\n",
-                   getpid(), getppid());
+            sleep(1);
+            printf("Novo processo, com PID = %d (\"filho\" de %d)\n", getpid(), getppid());
         }
         exit(0); // termina o novo processo
     }
 
     for (int i = 0; i < 10; ++i)
     {
-        sleep(1);
+        sleep(2);
         printf("Processo inicial (PID = %d, \"filho\" de %d).\n", getpid(), getppid());
     }
 
@@ -67,43 +66,32 @@ int main(int argc, char *argv[])
 }
 
 /*
-     ps j
-    PPID    PID     PGID    SID TTY        TPGID STAT   UID   TIME COMMAND
-    396     431     431     396 pts/1        431 S+    1000   0:00 -bash
-    449     450     450     450 pts/0        450 Ss+   1000   0:00 sh -c "$VSCODE_WSL_EXT_LOCATION/scripts/wslSer
-    450     451     450     450 pts/0        450 S+    1000   0:00 sh /mnt/c/Users/gonca/.vscode/extensions/ms-vs
-    451     456     450     450 pts/0        450 S+    1000   0:00 sh /home/melo/.vscode-server/bin/019f4d1419fbc
-    456     516     450     450 pts/0        450 Sl+   1000   0:37 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    516     540     450     450 pts/0        450 Sl+   1000   0:14 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    10220   10221   10221   10221 pts/2      10221 Ssl+  1000   0:01 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    10229   10230   10230   10230 pts/3      10230 Ssl+  1000   0:02 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    516     10237   450     450 pts/0        450 Sl+   1000   0:00 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    516     10250   450     450 pts/0        450 Sl+   1000   1:06 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    540     10318   10318   10318 pts/10     10318 Ss+   1000   0:00 /bin/bash --init-file /home/melo/.vscode-serve
-    10250   10380   450     450 pts/0        450 Sl+   1000   0:09 /home/melo/.vscode-server/extensions/ms-vscode
-    10250   10405   450     450 pts/0        450 Sl+   1000   0:00 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    13848   13852   13852   13852 pts/4      14974 Ss    1000   0:00 -bash
-    449     14855   450     450 pts/0        450 Sl+   1000   0:00 /home/melo/.vscode-server/extensions/ms-vscode
-    449     14879   14878   10318 pts/10     10318 S     1000   0:00 ./ex7  <---------------------------------------------------
-    13852   14974   14974   13852 pts/4      14974 R+    1000   0:00 ps j
-
-
-    PPID     PID    PGID     SID TTY        TPGID STAT   UID   TIME COMMAND
-    396     431     431     396 pts/1        431 S+    1000   0:00 -bash
-    449     450     450     450 pts/0        450 Ss+   1000   0:00 sh -c "$VSCODE_WSL_EXT_LOCATION/scripts/wslSer
-    450     451     450     450 pts/0        450 S+    1000   0:00 sh /mnt/c/Users/gonca/.vscode/extensions/ms-vs
-    451     456     450     450 pts/0        450 S+    1000   0:00 sh /home/melo/.vscode-server/bin/019f4d1419fbc
-    456     516     450     450 pts/0        450 Sl+   1000   0:38 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    516     540     450     450 pts/0        450 Sl+   1000   0:15 /home/melo/.vscode-server/bin/019f4d1419fbc821
-  10220   10221   10221   10221 pts/2      10221 Ssl+  1000   0:02 /home/melo/.vscode-server/bin/019f4d1419fbc821
-  10229   10230   10230   10230 pts/3      10230 Ssl+  1000   0:03 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    516   10237     450     450 pts/0        450 Sl+   1000   0:00 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    516   10250     450     450 pts/0        450 Sl+   1000   1:32 /home/melo/.vscode-server/bin/019f4d1419fbc821
-    540   10318   10318   10318 pts/10     10318 Ss+   1000   0:00 /bin/bash --init-file /home/melo/.vscode-serve
-  10250   10380     450     450 pts/0        450 Sl+   1000   0:18 /home/melo/.vscode-server/extensions/ms-vscode
-  10250   10405     450     450 pts/0        450 Sl+   1000   0:00 /home/melo/.vscode-server/bin/019f4d1419fbc821
-  13848   13852   13852   13852 pts/4      17027 Ss    1000   0:00 -bash
-    449   14855     450     450 pts/0        450 Sl+   1000   0:00 /home/melo/.vscode-server/extensions/ms-vscode
-  13852   17027   17027   13852 pts/4      17027 R+    1000   0:00 ps j
+     PPID     PID    PGID     SID TTY        TPGID STAT   UID   TIME COMMAND
+    376     415     415     376 pts/1        415 S+    1000   0:00 -bash
+    431     432     432     432 pts/0        432 Ss+   1000   0:00 sh -c "$VSCODE_WSL_EXT_LOCATION/scripts/wslServ
+    432     433     432     432 pts/0        432 S+    1000   0:00 sh /mnt/c/Users/gonca/.vscode/extensions/ms-vsc
+    433     438     432     432 pts/0        432 S+    1000   0:00 sh /home/melo/.vscode-server/bin/1e790d77f81672
+    438     498     432     432 pts/0        432 Sl+   1000   0:15 /home/melo/.vscode-server/bin/1e790d77f81672c49
+    498     564     432     432 pts/0        432 Sl+   1000   0:01 /home/melo/.vscode-server/bin/1e790d77f81672c49
+    498     595     432     432 pts/0        432 Sl+   1000   3:40 /home/melo/.vscode-server/bin/1e790d77f81672c49
+    498     610     432     432 pts/0        432 Sl+   1000   0:11 /home/melo/.vscode-server/bin/1e790d77f81672c49
+    610     621     621     621 pts/5      47012 Ss    1000   0:00 /bin/bash --init-file /home/melo/.vscode-server
+    595     662     432     432 pts/0        432 Sl+   1000   0:00 /home/melo/.vscode-server/bin/1e790d77f81672c49
+    595     688     432     432 pts/0        432 Sl+   1000   0:49 /home/melo/.vscode-server/extensions/ms-vscode.
+    431    9526     432     432 pts/0        432 Sl+   1000   0:01 /home/melo/.vscode-server/extensions/ms-vscode.
+  23564   23565   23565   23565 pts/2      23565 Ssl+  1000   0:01 /home/melo/.vscode-server/bin/1e790d77f81672c49
+  23575   23576   23576   23576 pts/3      23576 Ssl+  1000   0:02 /home/melo/.vscode-server/bin/1e790d77f81672c49
+    431   32366     432     432 pts/0        432 Sl+   1000   0:00 /home/melo/.vscode-server/extensions/ms-vscode.
+    621   41705   41705     621 pts/5      47012 T     1000   0:00 ./ex11
+  41705   41771   41705     621 pts/5      47012 T     1000   0:00 ./ex11
+  42038   42040   42040   42040 pts/4      47284 Ss    1000   0:00 -bash
+    621   43638   43638     621 pts/5      47012 T     1000   0:00 ./ex11
+    431   43916   43638     621 pts/5      47012 T     1000   0:00 ./ex11
+  43638   43917   43638     621 pts/5      47012 T     1000   0:00 ./ex11
+    621   44240   44240     621 pts/5      47012 T     1000   0:00 ./ex11
+  44240   44378   44240     621 pts/5      47012 T     1000   0:00 ./ex11
+    621   47012   47012     621 pts/5      47012 S+    1000   0:00 ./ex7
+  47012   47013   47012     621 pts/5      47012 Z+    1000   0:00 [ex7] <defunct>        <---------------Zombie não foi adotado pk termina primeiro que o pai
+  42040   47284   47284   42040 pts/4      47284 R+    1000   0:00 ps j
 
 */
