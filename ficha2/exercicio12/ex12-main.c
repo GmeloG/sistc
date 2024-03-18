@@ -47,3 +47,6 @@ double mytime() {
   gettimeofday(&tp,&tzp);
   return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
+
+
+/*Criar 30 processo criar 3 ciclos for */

@@ -24,34 +24,23 @@ void fun2(int *d)
 int main()
 {
     int dados = 0;
+    pid_t r;
     while (1)
     {
+
+
+         fun1(&dados);
+        r = fork(); 
         
-        pid_t r;            // variavel too make fork
-        r = fork();         // 1º fork
-        
-        if (r == 0)         // child process nº1
+        if (r == 0)
         {
-            //printf("Processo filho 1: PID = %d \n", getpid());
-            fun1(&dados);
-            
-            r = fork();         //2ºfork
-            if (r == 0)         // child process nº2
-            {
-                //printf("Processo filho 2: PID = %d \n", getpid());
-                fun2(&dados);
-                exit(0);
-            }
-            else{
-                exit(0);
-            }
-            
+            fun2(&dados);
+            exit(0);
         }
-        else{
-                wait(0);
-                printf("Processo Pai: PID = %d \n", getpid());
-        }
-        
-        
+  
+
+        // wait(0);
+        // printf("Processo Pai: PID = %d \n", getpid());
     }
+    return 0; 
 }
