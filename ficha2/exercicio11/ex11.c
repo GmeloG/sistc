@@ -28,19 +28,17 @@ int main()
     while (1)
     {
 
+        fun1(&dados);
+        r = fork();
 
-         fun1(&dados);
-        r = fork(); 
-        
         if (r == 0)
         {
             fun2(&dados);
             exit(0);
         }
-  
 
         // wait(0);
         // printf("Processo Pai: PID = %d \n", getpid());
     }
-    return 0; 
+    return 0;
 }

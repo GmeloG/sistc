@@ -27,24 +27,40 @@
 #include <unistd.h>
 #include <string.h>
 
-int main()
-{
 
+int main(void)
+{
+    
+    
+    //Declare a pointer to a character array of size 8  
     char *ptr = malloc(8);
-    pid_t r;
+
+    
+    // Assign the address of the pointer to the string "pai"
     ptr = strcpy(ptr, "pai");
 
-    r = fork();
-    if (r == 0)
+    //Fork a child process
+    pid_t r = fork();
+    
+    //if is on a child process
+    if (r == 0) 
     {
+        //Assign the address of the pointer to the string "filho"
         ptr = "filho";
+
+        // Print a message indicating that the child process is writing to the memory block
         printf("Processo filho:     %s  \n", ptr);
         exit(0);
     }
 
+    //Wait for the child process to finish
     waitpid(r, NULL, 0);
 
+    //Print the contents of the memory block
     printf("Processo pai:       %s  \n", ptr);
+
+    //Clean up malloc
+    free(ptr);
 
     return 0;
 }
