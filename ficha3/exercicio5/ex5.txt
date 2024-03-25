@@ -1,0 +1,183 @@
+/*
+    A função sigispending permite a um processo verificar se lhe foi enviado algum dos
+    sinais cuja entrega bloqueou (sigprocmask). No entanto, o processo não tem forma de
+    saber o número de vezes que este foi enviado. Mesmo quando o sinal não está bloqueado,
+    pode dar-se o caso do mesmo sinal ser enviado várias vezes em rápida sucessão e o
+    processo só detetar uma ocorrência desse sinal. Este exercício pretende ilustrar esse
+    último fenómeno.
+    O programa sigchld.c usa o sinal SIGCHLD para detetar a terminação de processos
+    filho. O programa foi implementado de modo que estes terminem aproximadamente 5
+    segundos após a sua criação. No entanto, a implementação tem uma falha.
+    1) Execute o programa sigchld. Observe que, quando as impressões terminam,
+    aparentemente ainda existem processos por terminar. No entanto, se abrir outro terminal
+    e executar o comando “ps -e| grep sigchld” irá verificar que todos os processos
+    filho já se encontram no estado zombie (defunct), isto é, já terminaram a execução do
+    programa.
+    Conclusão: o processo pai pode não ser capaz de detetar uma ocorrência do SIGCHLD
+    para cada processo filho que termina.
+
+      T  1000  347252  275051  0  80   0 -   694 do_sig pts/5    00:00:00 sigchld
+    1 Z  1000  347312  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347313  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347314  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347315  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347316  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347317  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347318  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347319  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347320  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347321  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347322  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347323  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347324  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347325  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347326  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347327  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347328  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347329  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347330  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347331  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347332  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347333  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347334  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347335  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347336  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347337  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347338  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347339  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347340  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347341  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347342  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347343  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347344  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347345  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347346  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347347  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347348  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347349  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347350  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347351  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+    1 Z  1000  347352  347252  0  80   0 -     0 -      pts/5    00:00:00 sigchld <defunct>
+
+    2) Termine o programa com a combinação ctrl+c. Verifique que o programa agora
+    deteta a terminação de todos os processos filho. Analise o código e verifique de que forma
+    esse comportamento é implementado.
+    Observação: quando se prime a combinação ctrl+c num terminal, todos os processos
+    do grupo do processo em foreground (i.e., tanto o processo em foreground como os seus
+    processos filho que não tenham mudado de grupo) recebem o sinal SIGINT
+    
+    Pause interrupted
+    ^C
+    Entering INT handler. INT handler: Process terminated (PID = 349031). 50 processes remaining. 
+    INT handler: Process terminated (PID = 349032). 49 processes remaining. 
+    INT handler: Process terminated (PID = 349033). 48 processes remaining. 
+    INT handler: Process terminated (PID = 349034). 47 processes remaining. 
+    INT handler: Process terminated (PID = 349035). 46 processes remaining. 
+    INT handler: Process terminated (PID = 349036). 45 processes remaining. 
+    INT handler: Process terminated (PID = 349037). 44 processes remaining. 
+    INT handler: Process terminated (PID = 349038). 43 processes remaining. 
+    INT handler: Process terminated (PID = 349039). 42 processes remaining. 
+    INT handler: Process terminated (PID = 349040). 41 processes remaining. 
+    INT handler: Process terminated (PID = 349041). 40 processes remaining. 
+    INT handler: Process terminated (PID = 349042). 39 processes remaining. 
+    INT handler: Process terminated (PID = 349043). 38 processes remaining. 
+    INT handler: Process terminated (PID = 349044). 37 processes remaining. 
+    INT handler: Process terminated (PID = 349045). 36 processes remaining. 
+    INT handler: Process terminated (PID = 349046). 35 processes remaining. 
+    INT handler: Process terminated (PID = 349047). 34 processes remaining. 
+    INT handler: Process terminated (PID = 349048). 33 processes remaining. 
+    INT handler: Process terminated (PID = 349049). 32 processes remaining. 
+    INT handler: Process terminated (PID = 349050). 31 processes remaining. 
+    INT handler: Process terminated (PID = 349051). 30 processes remaining. 
+    INT handler: Process terminated (PID = 349052). 29 processes remaining. 
+    INT handler: Process terminated (PID = 349053). 28 processes remaining. 
+    INT handler: Process terminated (PID = 349054). 27 processes remaining. 
+    INT handler: Process terminated (PID = 349055). 26 processes remaining. 
+    INT handler: Process terminated (PID = 349056). 25 processes remaining. 
+    INT handler: Process terminated (PID = 349057). 24 processes remaining. 
+    INT handler: Process terminated (PID = 349058). 23 processes remaining. 
+    INT handler: Process terminated (PID = 349059). 22 processes remaining. 
+    INT handler: Process terminated (PID = 349060). 21 processes remaining. 
+    INT handler: Process terminated (PID = 349061). 20 processes remaining. 
+    INT handler: Process terminated (PID = 349062). 19 processes remaining. 
+    INT handler: Process terminated (PID = 349063). 18 processes remaining. 
+    INT handler: Process terminated (PID = 349064). 17 processes remaining. 
+    INT handler: Process terminated (PID = 349065). 16 processes remaining. 
+    INT handler: Process terminated (PID = 349066). 15 processes remaining. 
+    INT handler: Process terminated (PID = 349067). 14 processes remaining. 
+    INT handler: Process terminated (PID = 349068). 13 processes remaining. 
+    INT handler: Process terminated (PID = 349069). 12 processes remaining. 
+    INT handler: Process terminated (PID = 349070). 11 processes remaining. 
+    INT handler: Process terminated (PID = 349071). 10 processes remaining. 
+    INT handler: Process terminated (PID = 349072). 9 processes remaining. 
+    INT handler: Process terminated (PID = 349073). 8 processes remaining. 
+    INT handler: Process terminated (PID = 349074). 7 processes remaining. 
+    INT handler: Process terminated (PID = 349075). 6 processes remaining. 
+    INT handler: Process terminated (PID = 349076). 5 processes remaining. 
+    INT handler: Process terminated (PID = 349077). 4 processes remaining. 
+    INT handler: Process terminated (PID = 349078). 3 processes remaining. 
+    INT handler: Process terminated (PID = 349079). 2 processes remaining. 
+    INT handler: Process terminated (PID = 349080). 1 processes remaining. 
+    INT handler: Process terminated (PID = 349081). 0 processes remaining. 
+
+    3) Execute novamente o programa, mas desta vez prima a combinação ctrl+c
+    imediatamente após a mensagem “All processes created”. Observe que:
+    • A função de atendimento do SIGINT é interrompida algumas vezes pela função
+    de atendimento do SIGCHLD.
+    Observação: este comportamento poderia ser evitado através da adequada
+    configuração do campo sa_mask da estrutura sigaction e correspondente uso
+    da função sigaction na configuração da função de atendimento do sinal
+    SIGINT.
+    • Os processos filho terminam devido à receção do SIGINT e não após a espera de
+    5 segundos.
+
+    All processes created ============================
+    ^CCLD handler: Process terminated (PID = 350058). 99 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350059). 98 processes remaining. Terminated by signal 2
+    Entering INT handler. CLD handler: Process terminated (PID = 350057). 97 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350081). 96 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350082). 95 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350082). 95 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350080). 94 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350083). 93 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350056). 92 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350084). 91 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350085). 90 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350097). 89 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350070). 88 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350054). 87 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350096). 86 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350095). 85 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350098). 84 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350099). 83 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350052). 82 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350094). 81 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350067). 80 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350101). 79 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350093). 78 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350051). 77 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350087). 76 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350121). 75 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350121). 75 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350089). 74 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350050). 73 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350128). 72 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350129). 71 processes remaining. Terminated by signal 2
+    INT handler: Process terminated (PID = 350129). 71 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350069). 70 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350039). 69 processes remaining. Terminated by signal 2
+    CLD handler: Process terminated (PID = 350040). 68 processes remaining. Terminated by signal 2
+
+    4) Com base na função int_handler, altere a função cld_handler de forma que esta
+    detete corretamente a terminação de todos os processos filho.
+
+    
+*/
+
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <time.h>
+

@@ -75,7 +75,7 @@ int main()
       // child process
       if (r == 0)
       {
-        rectangular2polar(dados_out + elems_per_proc, dados_in + elems_per_proc, elems_per_proc);
+        rectangular2polar(dados_out + elems_per_proc*j, dados_in + elems_per_proc*j, elems_per_proc);
         exit(0);
       }
       // parent process

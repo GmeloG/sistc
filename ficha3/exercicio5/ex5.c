@@ -1,37 +1,117 @@
-/*Exercício V 
-A função sigispending permite a um processo verificar se lhe foi enviado algum dos 
-sinais cuja entrega bloqueou (sigprocmask). No entanto, o processo não tem forma de 
-saber o número de vezes que este foi enviado. Mesmo quando o sinal não está bloqueado, 
-pode dar-se o caso do mesmo sinal ser enviado várias vezes em rápida sucessão e o 
-processo só detetar uma ocorrência desse sinal. Este exercício pretende ilustrar esse 
-último fenómeno. 
-O programa sigchld.c usa o sinal SIGCHLD para detetar a terminação de processos 
-filho. O programa foi implementado de modo que estes terminem aproximadamente 5 
-segundos após a sua criação. No entanto, a implementação tem uma falha.  
-1) Execute o programa sigchld. Observe que, quando as impressões terminam, 
-aparentemente ainda existem processos por terminar. No entanto, se abrir outro terminal 
-e executar o comando “ps -e| grep sigchld” irá verificar que todos os processos 
-filho já se encontram no estado zombie (defunct), isto é, já terminaram a execução do 
-programa. 
-Conclusão: o processo pai pode não ser capaz de detetar uma ocorrência do SIGCHLD 
-para cada processo filho que termina. 
-2) Termine o programa com a combinação ctrl+c. Verifique que o programa agora 
-deteta a terminação de todos os processos filho. Analise o código e verifique de que forma 
-esse comportamento é implementado. 
-Observação: quando se prime a combinação ctrl+c num terminal, todos os processos 
-do grupo do processo em foreground (i.e., tanto o processo em foreground como os seus 
-processos filho que não tenham mudado de grupo) recebem o sinal SIGINT  
-3) Execute novamente o programa, mas desta vez prima a combinação ctrl+c 
-imediatamente após a mensagem “All processes created”. Observe que: 
-• A função de atendimento do SIGINT é interrompida algumas vezes pela função 
-de atendimento do SIGCHLD.  
-Observação: este comportamento poderia ser evitado através da adequada 
-configuração do campo sa_mask da estrutura sigaction e correspondente uso 
-da função sigaction na configuração da função de atendimento do sinal 
-SIGINT.  
-• Os processos filho terminam devido à receção do SIGINT e não após a espera de 
-5 segundos. 
-4) Com base na função int_handler, altere a função cld_handler de forma que esta 
-detete corretamente a terminação de todos os processos filho. */
+#include <unistd.h>
+#include <signal.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdlib.h>
 
+int nc, nt;
+void cld_handler(int);
+void int_handler(int);
 
+int main(int argc, char *argv[])
+{
+  pid_t r;
+  sigset_t ss1;
+  struct sigaction act;
+
+  // The printf function may sometimes be interrupted by a signal and,
+  // due to that, print in duplicate.
+  // If block_sigchld is set to 1, the SIGCHLD signal will be blocked
+  // when calling the printf function
+  int block_sigchld = 0;
+  if (argc > 1 && argv[1][0] == 'b')
+    block_sigchld = 1;
+
+  sigemptyset(&ss1);
+  sigaddset(&ss1, SIGCHLD);
+
+  act.sa_flags = 0;
+  sigemptyset(&act.sa_mask);
+  act.sa_handler = cld_handler;
+  sigaction(SIGCHLD, &act, NULL);
+
+  nt = 0;
+  for (nc = 0; nc < 100; ++nc)
+  {
+
+    // CREATE NEW PROCESS
+    r = fork();
+    if (r == 0)
+    {
+      // TERMINATE NEW PROCESS
+      sleep(5); // Comment this line and observe that some messages will be printed twice.
+                // That happens because SIGCHLD will sometimes interrupt the printf function
+      exit(1);
+    }
+
+    // JUST IN CASE THE SYSTEM IS UNABLE TO CREATE NEW PROCESSES
+    if (r == -1)
+    {
+      perror("fork");
+      abort();
+    }
+
+    if (block_sigchld)
+      sigprocmask(SIG_BLOCK, &ss1, NULL);
+    printf("Created process %d (PID = %d)\n", nc + 1, r);
+    sigprocmask(SIG_UNBLOCK, &ss1, NULL);
+  }
+
+  // Set the handler here so that child processes keep the default disposition
+  act.sa_handler = int_handler;
+  sigaction(SIGINT, &act, NULL);
+
+  if (block_sigchld)
+    sigprocmask(SIG_BLOCK, &ss1, NULL);
+  printf("All processes created ============================\n");
+  sigprocmask(SIG_UNBLOCK, &ss1, NULL);
+
+  while (1)
+  {
+    pause();
+
+    if (block_sigchld)
+      sigprocmask(SIG_BLOCK, &ss1, NULL);
+    printf("Pause interrupted\n");
+    sigprocmask(SIG_UNBLOCK, &ss1, NULL);
+  }
+
+  return 0;
+};
+
+void cld_handler(int signum)
+{
+  pid_t p;
+  int wstatus;
+  /*A função waitpid com a opção WNOHANG retorna imediatamente se nenhum processo filho terminou. 
+  O loop while garante que todos os processos filhos que terminaram sejam esperados, 
+  evitando assim processos zombie.*/
+  while (p = waitpid(-1, &wstatus, WNOHANG) > 0)
+  {
+    ++nt;
+    printf("CLD handler: Process terminated (PID = %d). %d processes remaining. ", p, nc - nt);
+    if (WIFSIGNALED(wstatus))
+      printf("Terminated by signal %d\n", WTERMSIG(wstatus));
+    else
+      printf("\n");
+  }
+}
+
+void int_handler(int signum)
+{
+  pid_t p;
+  int wstatus;
+
+  printf("Entering INT handler. ");
+  while ((p = waitpid(-1, &wstatus, WNOHANG)) > 0)
+  {
+    ++nt;
+    printf("INT handler: Process terminated (PID = %d). %d processes remaining. ", p, nc - nt);
+    if (WIFSIGNALED(wstatus))
+      printf("Terminated by signal %d\n", WTERMSIG(wstatus));
+    else
+      printf("\n");
+  }
+  exit(0);
+}
