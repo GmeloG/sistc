@@ -1,6 +1,9 @@
-#include <unistd.h>
-#include <stdio.h>
+#include <signal.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <time.h>
 
 void fun1(int *d) {
   ++d[0];

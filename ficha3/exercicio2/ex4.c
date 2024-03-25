@@ -87,3 +87,18 @@ void print_pending()
       printf("Sinal %d (%s) pendente\n", signum, strsignal(signum));
 }
 
+/*
+    4) Execute o programa ex4 em primeiro plano ("./ex4"). Explique como deve proceder 
+para terminar o programa, sem terminar a shell (experimente as combinações ctrl+c, 
+ctrl+\ e ctrl+z). 
+
+Para terminar foi nesserario usar a kill -kill pelo terminar da consola
+
+5)  Com base na análise dos programas anteriores e nos resultados dos testes, o que conclui 
+em relação ao comportamento dos processos face aos sinais SIGKILL e SIGSTOP?
+
+o sigkill mata o programa e ele não pode ser novamente executado
+o sigstop supende ate que iniciamos essa paragem nomamente
+
+*/
+

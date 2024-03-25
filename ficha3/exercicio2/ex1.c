@@ -10,9 +10,9 @@ int main() {
 	struct sigaction act;
 
 
-	act.sa_handler=myhandler;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
+	act.sa_handler=myhandler; //defenir a function handler com signal
+	sigemptyset(&act.sa_mask); // limpar a mask do sinal
+	act.sa_flags = 0;			//colocar a flag a 0;
 	if(sigaction(SIGTERM, &act, NULL)==-1)
 	{
 		perror("sigaction");

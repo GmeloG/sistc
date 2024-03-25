@@ -70,3 +70,42 @@ void print_pending()
       printf("Sinal %d (%s) pendente\n", signum, strsignal(signum));
 }
 
+/*
+    3.1) Execute o programa ex3 em background e envie-lhe os sinais SIGTERM e 
+    SIGUSR1. Justifique as diferenças face às alíneas anteriores. 
+    Ola! Sou o processo 250102. Mas pode confirmar com o comando ps.
+      Ola! Sou o processo 250102. Mas pode confirmar com o comando ps.
+      Ola! Sou o processo 250102. Mas pode confirmar com o comando ps.
+      Ola! Sou o processo 250102. Mas pode confirmar com o comando ps.
+      Sinal 28 (Window changed) pendente
+      Ola! Sou o processo 250102. Mas pode confirmar com o comando ps.
+
+      ^Z^Z
+      ^C
+      ^C
+      ^C
+      Ola! Sou o processo 250102. Mas pode confirmar com o comando ps.
+      Sinal 2 (Interrupt) pendente
+      Sinal 20 (Stopped) pendente
+
+      Ola! Sou o processo 250102. Mas pode confirmar com o comando ps.
+      Sinal 2 (Interrupt) pendente
+      Sinal 20 (Stopped) pendente
+      Sinal 28 (Window changed) pendente
+
+    O programa não é terminado e todos os sinais ficam pedentes 
+    e fica em buffer todos os sinais exectudados como pendestes
+
+    3.2) Execute o comando kill –STOP pid, onde pid é o identificador do processo. Irá 
+    observar que o processo deixa de imprimir mensagens no ecrã. Execute o comando ps –l e analise o resultado. Tenha em especial atenção a coluna S e a seguinte legenda 
+    (extracto do man ps): 
+
+    O processo ficou parado e não exectua mais
+
+    3.3) Execute o comando kill –CONT pid, onde pid é o identificador do processo. 
+Analise o resultado. 
+
+  o processo começou a exectuar outravez
+
+3.4) Termine o processo com o comando kill –KILL pid. 
+*/
