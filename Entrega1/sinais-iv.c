@@ -34,6 +34,10 @@ void fun2(int *d)
 
 int main()
 {
+
+  /* linha de identificação */
+  printf("1211710 - %s\n", __FILE__);
+
   int dados = 0;
   struct sigaction act;
   sigset_t new_mask;
@@ -52,14 +56,14 @@ int main()
   {
     fun1(&dados);
     pid_t r = fork();
-    if (r == -1)    // se não criar processo
+    if (r == -1) // se não criar processo
     {
       perror("fork");
       exit(1);
     }
-    if (r == 0)   //cria processo
+    if (r == 0) // cria processo
     {
-      
+
       fun2(&dados);
       exit(0);
     }
