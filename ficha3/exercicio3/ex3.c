@@ -31,6 +31,7 @@ int main()
   sigemptyset(&new_mask);        // inicar marcara vazia
   sigaddset(&new_mask, SIGINT);  // colocar sinal sigint na mascara
   sigaddset(&new_mask, SIGQUIT); // colocar sinal sigquit na mascara
+
   if (sigprocmask(SIG_BLOCK, &new_mask, NULL) == -1)
   {
     perror("sigprocmask");
@@ -41,7 +42,7 @@ int main()
   act.sa_handler = myHandler;
   sigemptyset(&act.sa_mask);                // esvaziar lista do manipulador para não começar com sinais bloqueados
   act.sa_flags = 0;                         // flags a 0
-  if (sigaction(SIGCHLD, &act, NULL) == -1) //quando o processo ficho termina, se a chamada falhar returna o erro
+  if (sigaction(SIGCHLD, &act, NULL) == -1) // quando o processo ficho termina, se a chamada falhar returna o erro
   {
     perror("sigaction");
     exit(1);
@@ -54,12 +55,16 @@ int main()
     if (r == 0)
     {
       // Bloquear SIGTSTP no processo filho
-      sigemptyset(&new_mask);         //incia a new_mask vazia
-      sigaddset(&new_mask, SIGTSTP);  //adiciona o sinal sigtstp (paragem a lista)
-      sigprocmask(SIG_BLOCK, &new_mask, NULL);  //bloqueia o sinais que se encontra em new_mask neste caso é sigtsp
+      sigemptyset(&new_mask);                  // incia a new_mask vazia
+      sigaddset(&new_mask, SIGTSTP);           // adiciona o sinal sigtstp (paragem a lista)
+      sigprocmask(SIG_BLOCK, &new_mask, NULL); // bloqueia o sinais que se encontra em new_mask neste caso é sigtsp
+
+      // Ignorar SIGTERM no processo filho
+      signal(SIGTERM, SIG_IGN); // ignora o sinal sigterm
+
 
       // Restaurar a configuração padrão para SIGCHLD no processo filho
-      signal(SIGCHLD, SIG_DFL);   //SIGCHLD para a ação padrão. SIGCHLD é o sinal enviado a um processo quando um processo filho termina.
+      signal(SIGCHLD, SIG_DFL); // SIGCHLD para a ação padrão. SIGCHLD é o sinal enviado a um processo quando um processo filho termina.
 
       do_something();
       return (0);
@@ -78,18 +83,17 @@ void do_something()
   sleep(1);
 }
 
-
 void myHandler(int signum)
 {
-    int wstatus;
+  int wstatus;
 
-    // espera que um processo filho termine, e ver o status e guarda o valor em wstatus
-    
-    wait(&wstatus);
+  // espera que um processo filho termine, e ver o status e guarda o valor em wstatus
 
-    //  ve se o processo filho termeminou pelo sinal.
-    if (WIFSIGNALED(wstatus))
-    {
-        printf("Child terminated by signal\n");
-    }
+  wait(&wstatus);
+
+  //  ve se o processo filho termeminou pelo sinal.
+  if (WIFSIGNALED(wstatus))
+  {
+    printf("Child terminated by signal\n");
+  }
 }

@@ -32,9 +32,8 @@ identificados pelo comando lscpu.
 
 // NELEM must be a multiple of 2
 #define NELEM 20000000
-#define NITER 40// 46
-#define Nprocs 30
-
+#define NITER 46 // 46
+#define Nprocs 1
 void rectangular2polar(double *, double *, int);
 double mytime();
 
@@ -64,33 +63,36 @@ int main()
 
   // get current time, for benchmarking
   t0 = mytime();
-  pid_t r;
+  int elems_per_proc = NELEM / Nprocs;
+  
+  pid_t r[Nprocs];
 
   // number of elements for each processor
-  int elems_per_proc = NELEM / Nprocs;
+  
 
-  // This cycle is used only for benchmarking purposes
-  for (int i = 0; i < NITER; ++i)
+  // number of process createad
+  for (int j = 0; j < Nprocs; ++j)
   {
-    // number of process createad
-    for (int j = 0; j < Nprocs; ++j)
+    // create a new processor
+    r[j] = fork();
+    // child process
+    if (r[j] == 0)
     {
-      // create a new processor
-      r = fork();
-      // child process
-      if (r == 0)
+      for (int i = 0; i < NITER; ++i)
       {
-        rectangular2polar(dados_out + elems_per_proc * j, dados_in + elems_per_proc * j, elems_per_proc);
-        exit(0);
+        rectangular2polar(dados_out + elems_per_proc * i, dados_in + elems_per_proc * i, elems_per_proc);
       }
-      // parent process
-      // wait for the child to finish
-      for (int i = 0; i < Nprocs; ++i)
-      {
-        wait(NULL);
-      }
+      exit(0);
     }
   }
+  // parent process
+  // wait for the child to finish
+  for (int k = 0; k < Nprocs; ++k)
+  {
+    wait(NULL);
+    //waitpid(r[k], NULL, 0);
+  }
+
   printf("Computation took %.1f s\n", mytime() - t0);
 
   return 0;
@@ -104,5 +106,3 @@ double mytime()
   gettimeofday(&tp, &tzp);
   return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
 }
-
-/*Criar 30 processo criar 3 ciclos for */

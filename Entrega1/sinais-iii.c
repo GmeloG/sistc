@@ -63,6 +63,9 @@ int main()
       sigaddset(&new_mask, SIGTSTP);           // adiciona o sinal sigtstp (paragem a lista)
       sigprocmask(SIG_BLOCK, &new_mask, NULL); // bloqueia o sinais que se encontra em new_mask neste caso é sigtsp
 
+      // Ignorar SIGTERM no processo filho
+      signal(SIGTERM, SIG_IGN); // ignora o sinal sigterm
+      
       // Restaurar a configuração padrão para SIGCHLD no processo filho
       signal(SIGCHLD, SIG_DFL); // SIGCHLD para a ação padrão. SIGCHLD é o sinal enviado a um processo quando um processo filho termina.
 
