@@ -16,30 +16,24 @@ int main()
 {
   char *buf = (char *)malloc(256);
 
+  
+  sem_unlink("/sem1"); // fechar o ficheiro do semaforo
   // criar um semáforo com o nome "/sem1" e inicializa-lo a 0
-  sem_t *psem = sem_open("/sem1", O_CREAT | O_RDWR, 0600, 0);
+  psem = sem_open("/sem1", O_CREAT | O_RDWR, 0600, 1); // create se não existir cria se não não cria , read write, 0600 permissões 110 em, 1 valor inicial do semafaro.
 
   int r = fork();
   if (r == 0)
   {
 
-    sem_wait(psem); // Esta linha bloqueia o semáforo, até que o processo pai o liberte.
     sprintf(buf, "%d: Ola -----------------------------------------\n", getpid());
     myfunc(buf);
-    sem_post(psem); // Esta linha liberta o semáforo, permitindo que o processo filho prossiga.
-    exit(0);
   }
   else
   {
-    sem_post(psem); // Esta linha liberta o semáforo, permitindo que o processo filho prossiga.
-    sem_wait(psem); // Esta linha bloqueia o semáforo, até que o processo pai o liberte.
     sprintf(buf, "%d: Ole +++++++++++++++++++++++++++++++++++++++++\n", getpid());
     myfunc(buf);
-
     waitpid(r, NULL, 0);
   }
-
-  sem_unlink("/sem1"); // Apagar o semáforo
 
   return (0);
 }
@@ -48,7 +42,10 @@ void *myfunc(void *arg)
 {
   while (1)
   {
+    
     sleep(1);
+    sem_wait(psem); // Esta linha bloqueia o semáforo, até que o processo pai o liberte.
     myprint((char *)arg);
+    sem_post(psem);
   }
 }

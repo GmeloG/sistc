@@ -1,41 +1,39 @@
-
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <float.h>
 #include <pthread.h>
 
 #define NUM_ELEM 200
 #define NUM_ITER 14000000
-#define NUM_THREADS 8
+#define NUM_THREADS 50
 
-// Estrutura para passar argumentos para a função que vai ser executada pela theard
+// Estrutura para passar argumentos para a função que vai ser executada pela thread
 typedef struct
 {
   double *ptr;
   int n;
+  unsigned int seed;
 } targs_t;
 
-//prototipos
-void operacao_muito_demorada(double *, int);
+// Protótipos das funções
+void operacao_muito_demorada(double *, int, unsigned int);
 void print_statistics(time_t t0);
 void print_data(double *dados);
 
-// Função que vai ser executada pela theard
-void *theardAux(void *args)
+// Função que vai ser executada pela thread
+void *threadAux(void *args)
 {
-  targs_t *p = (targs_t *)args; // chamese cast
-  operacao_muito_demorada(p->ptr, p->n);
+  targs_t *p = (targs_t *)args;
+  operacao_muito_demorada(p->ptr, p->n, p->seed);
   return NULL;
 }
 
 int main()
 {
-
-  // Allocation of a vector to hold the data to be processed
+  // Alocação de um vetor para armazenar os dados a serem processados
   double *dados = malloc(sizeof(double) * NUM_ELEM);
   if (dados == NULL)
   {
@@ -50,32 +48,34 @@ int main()
     printf("%.1lf KiB allocated\n", sizeof(double) * NUM_ELEM / 1024.0);
   }
 
-  // get current time, for benchmarking
+  // Obtém o tempo atual, para benchmarking
   time_t t0;
   t0 = time(NULL);
 
-  // operacao_muito_demorada(dados, NUM_ELEM);
-  // operacao_muito_demorada(dados, NUM_ELEM/2);
-  // operacao_muito_demorada(dados+NUM_ELEM/2, NUM_ELEM/2);
+  // Inicializa o gerador de números aleatórios
+  srand((unsigned int)time(NULL));
 
   pthread_t tids[NUM_THREADS];
   targs_t args[NUM_THREADS];
 
+  // Divisão do trabalho entre as threads
+  int chunk_size = NUM_ELEM / NUM_THREADS;
   for (int i = 0; i < NUM_THREADS; i++)
   {
-    args[i].ptr = dados + i * (NUM_ELEM / NUM_THREADS);
-    args[i].n = NUM_ELEM/NUM_THREADS ;
-    pthread_create(&tids[i], NULL, theardAux, &args[i]); // criar theard
+    args[i].ptr = dados + i * chunk_size;
+    args[i].n = chunk_size;
+    args[i].seed = rand(); // Seed diferente para cada thread
+    pthread_create(&tids[i], NULL, threadAux, (void *)&args[i]);
   }
 
   for (int i = 0; i < NUM_THREADS; i++)
   {
-    pthread_join(&tids[i], NULL); //fechar o theard
+    pthread_join(tids[i], NULL);
   }
 
   print_statistics(t0);
 
-  // this should print the sequence 0, 2, 4, ... , 2*(NUM_ELEM-1)
+  // Isso deve imprimir a sequência 0, 2, 4, ... , 2*(NUM_ELEM-1)
   print_data(dados);
 
   return 0;
@@ -107,8 +107,7 @@ void print_data(double *dados)
   printf("%.0lf\n\n", dados[i]);
 }
 
-// Prenche o vector com dados desde o endereço base (vector) até vector+tamanho_vector-1
-void operacao_muito_demorada(double *vector, int tamanho_vector)
+void operacao_muito_demorada(double *vector, int tamanho_vector, unsigned int seed)
 {
   int i, j;
   double *v;
@@ -121,7 +120,7 @@ void operacao_muito_demorada(double *vector, int tamanho_vector)
     v = vector;
     for (i = 0; i < tamanho_vector; ++i)
     {
-      *v = drand48();
+      *v = (double)rand_r(&seed) / RAND_MAX; // Número aleatório entre 0 e 1
       v++;
     }
     v = vector;
@@ -132,7 +131,7 @@ void operacao_muito_demorada(double *vector, int tamanho_vector)
     }
   }
 
-  // Escrita no vector
+  // Escrita no vetor
   for (i = 0; i < tamanho_vector; ++i)
   {
     vector[i] = (val + i) * 2.0;
