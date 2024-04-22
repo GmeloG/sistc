@@ -19,6 +19,7 @@ void myHandler(int signum)
     printf("Child terminated by signal\n");
   }
 }
+
 void fun1(int *d)
 {
   ++d[0];
@@ -46,7 +47,7 @@ int main()
   act.sa_handler = myHandler;
   sigemptyset(&act.sa_mask);                // esvaziar lista do manipulador para não começar com sinais bloqueados
   act.sa_flags = 0;                         // flags a 0
-  if (sigaction(SIGCHLD, &act, NULL) == -1) // quando o processo ficho termina, se a chamada falhar returna o erro
+  if (sigaction(SIGCHLD, &act, NULL) == -1) // quando o processo filho termina, se a chamada falhar returna o erro
   {
     perror("sigaction");
     exit(1);

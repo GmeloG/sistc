@@ -1,23 +1,23 @@
 /*
     O processamento principal deste programa é feito na função rectangular2polar
-(chamada na linha 35), que processa os valores em dados_in e guarda os respetivos
-resultados em dados_out. Esta função está definida no ficheiro ex12-math.c.
-A função mytime é usada para obter um valor aproximado do tempo de execução da
-função rectangular2polar, cuja chamada é repetida várias vezes (ciclo for da linha
-34) de forma a diminuir o impacto do erro de medida desse tempo.
+  (chamada na linha 35), que processa os valores em dados_in e guarda os respetivos
+  resultados em dados_out. Esta função está definida no ficheiro ex12-math.c.
+  A função mytime é usada para obter um valor aproximado do tempo de execução da
+  função rectangular2polar, cuja chamada é repetida várias vezes (ciclo for da linha
+  34) de forma a diminuir o impacto do erro de medida desse tempo.
 
-a) Compile o programa através do seguinte comando:
-cc -o ex12 ex12-main.c ex12-math.c -lm -O3
-b) Teste o programa e altere o valor de NITER de modo a obter um tempo de execução
-de aproximadamente 10 segundos.
-c) Altere o programa anterior de modo que o processamento dos elementos em
-dados_in pela função rectangular2polar seja dividido por 30 processos. Não
-repita o código 30 vezes, use um ciclo for para criar os processos e outro ciclo for
-para aguardar que cada um deles termine. A função rectangular2polar não deve
-ser alterada.
-Compile e teste o programa. O valor de NITER deverá ser o mesmo que usou na alínea
-b). Relacione o tempo obtido com o número de núcleos de processamento
-identificados pelo comando lscpu.
+  a) Compile o programa através do seguinte comando:
+  cc -o ex12 ex12-main.c ex12-math.c -lm -O3
+  b) Teste o programa e altere o valor de NITER de modo a obter um tempo de execução
+  de aproximadamente 10 segundos.
+  c) Altere o programa anterior de modo que o processamento dos elementos em
+  dados_in pela função rectangular2polar seja dividido por 30 processos. Não
+  repita o código 30 vezes, use um ciclo for para criar os processos e outro ciclo for
+  para aguardar que cada um deles termine. A função rectangular2polar não deve
+  ser alterada.
+  Compile e teste o programa. O valor de NITER deverá ser o mesmo que usou na alínea
+  b). Relacione o tempo obtido com o número de núcleos de processamento
+  identificados pelo comando lscpu.
 
 
 */

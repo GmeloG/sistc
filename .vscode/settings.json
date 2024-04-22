@@ -61,7 +61,8 @@
     "wait.h": "c",
     "unistd.h": "c",
     "signal.h": "c",
-    "stdio.h": "c"
+    "stdio.h": "c",
+    "mman.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

@@ -6,20 +6,25 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <float.h>
+#include <pthread.h>
 
 #define NUM_ELEM 200
 #define NUM_ITER 14000000
+#define NUM_THREADS 8
 
+// Estrutura para passar argumentos para a função que vai ser executada pela theard
 typedef struct
 {
   double *ptr;
   int n;
 } targs_t;
 
+//prototipos
 void operacao_muito_demorada(double *, int);
 void print_statistics(time_t t0);
 void print_data(double *dados);
 
+// Função que vai ser executada pela theard
 void *theardAux(void *args)
 {
   targs_t *p = (targs_t *)args; // chamese cast
@@ -49,23 +54,23 @@ int main()
   time_t t0;
   t0 = time(NULL);
 
-  int nTheards = 8;
-
   // operacao_muito_demorada(dados, NUM_ELEM);
   // operacao_muito_demorada(dados, NUM_ELEM/2);
   // operacao_muito_demorada(dados+NUM_ELEM/2, NUM_ELEM/2);
-  pthread_t tids[nTheards];
-  targs_t args[nTheards];
-  for (int i = 0; i < nTheards; i++)
+
+  pthread_t tids[NUM_THREADS];
+  targs_t args[NUM_THREADS];
+
+  for (int i = 0; i < NUM_THREADS; i++)
   {
-    args[i].ptr = dados + i * (NUM_ELEM / nTheards);
-    args[i].n = NUM_ELEM / nTheards;
+    args[i].ptr = dados + i * (NUM_ELEM / NUM_THREADS);
+    args[i].n = NUM_ELEM/NUM_THREADS ;
     pthread_create(&tids[i], NULL, theardAux, &args[i]); // criar theard
   }
 
-  for (int i = 0; i < nTheards; i++)
+  for (int i = 0; i < NUM_THREADS; i++)
   {
-    pthread_join(&tids[i], NULL); // criar theard
+    pthread_join(&tids[i], NULL); //fechar o theard
   }
 
   print_statistics(t0);

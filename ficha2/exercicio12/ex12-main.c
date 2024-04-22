@@ -89,8 +89,7 @@ int main()
   // wait for the child to finish
   for (int k = 0; k < Nprocs; ++k)
   {
-    wait(NULL);
-    //waitpid(r[k], NULL, 0);
+    waitpid(r[k], NULL, 0);
   }
 
   printf("Computation took %.1f s\n", mytime() - t0);

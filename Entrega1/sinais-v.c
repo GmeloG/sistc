@@ -88,7 +88,8 @@ void cld_handler(int signum)
 {
   pid_t p;
   int wstatus;
-  /*A função waitpid com a opção WNOHANG retorna imediatamente se nenhum processo filho terminou.
+  /*A função waitpid com a opção WNOHANG retorna imediatamente se nenhum 
+  processo filho terminou.
   O loop while garante que todos os processos filhos que terminaram sejam esperados,
   evitando assim processos zombie.*/
   while (p = waitpid(-1, &wstatus, WNOHANG) > 0)
