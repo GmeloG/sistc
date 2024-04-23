@@ -63,7 +63,8 @@
     "signal.h": "c",
     "stdio.h": "c",
     "mman.h": "c",
-    "time.h": "c"
+    "time.h": "c",
+    "stat.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

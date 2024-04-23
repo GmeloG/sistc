@@ -13,6 +13,10 @@
 #define SHM_NAME "/f5-ex4"
 #define SHM_SIZE 1024
 
-#define handle_error(s) { perror(s); exit(EXIT_FAILURE);}
+#define handle_error(s)     \
+    {                       \
+        perror(s);          \
+        exit(EXIT_FAILURE); \
+    }
 
 #endif
