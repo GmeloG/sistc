@@ -11,23 +11,22 @@
 
 void myprint(const char *str);
 void *myfunc(void *);
+
 sem_t *psem;
 
 int main()
 {
   char *buf = (char *)malloc(256);
-  // exercicio 2.4
-  // char *buf = (char *) mmap(NULL, 256,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-  // semaforo com nome
-  sem_unlink("/sem1"); // fechar o ficheiro do semaforo
-  // criar um semáforo com o nome "/sem1" e inicializa-lo a 0
-  psem = sem_open("/sem1", O_CREAT | O_RDWR, 0600, 1); // create se não existir cria se não não cria , read write, 0600 permissões 110 em, 1 valor inicial do semafaro.
+  // Usar semanforo sem nome em memoria compartilhada
+  //como o semaforo sem nome não tem memoria partilhada entre processos, 
+  //este tem de ser criado nos multiplos processos.
+  psem = mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  sem_init(psem, 1, 1); 
 
   int r = fork();
   if (r == 0)
   {
-
     sprintf(buf, "%d: Ola -----------------------------------------\n", getpid());
     myfunc(buf);
   }
@@ -38,6 +37,9 @@ int main()
     waitpid(r, NULL, 0);
   }
 
+  sem_destroy(psem);
+  munmap(psem, sizeof(sem_t));
+
   return (0);
 }
 
@@ -45,13 +47,14 @@ void *myfunc(void *arg)
 {
   while (1)
   {
-
     sleep(1);
-    sem_wait(psem); // Esta linha bloqueia o semáforo, até que o processo pai o liberte.
+    sem_wait(psem); 
     myprint((char *)arg);
     sem_post(psem);
   }
 }
+
+
 /*
 
       2 - Extraia o conteúdo do ficheiro ficha-sinc-ficheiros.zip para o seu diretório de trabalho.
