@@ -47,11 +47,18 @@ int main()
 
 
 /*
-         
-Apresente a sequência de impressões produzidas por este programa. Assuma que não existem 
-interferências de outros processos no sistema, que o identificador do processo inicial é 2000 e 
-que o(s) novo(s) processo(s) toma(m) o(s) valor(es) seguinte(s). Assuma que que a instrução 
-++v[0] é atómica. Apresente um diagrama temporal representativo da execução do programa 
-e justifique sucintamente. A sequência de impressões deve ser apresentada de forma destacada. 
+            
+    Apresente a sequência de impressões produzidas por este programa. Assuma que não existem 
+    interferências de outros processos no sistema, que o identificador do processo inicial é 2000 e 
+    que o(s) novo(s) processo(s) toma(m) o(s) valor(es) seguinte(s). Assuma que que a instrução 
+    ++v[0] é atómica. Apresente um diagrama temporal representativo da execução do programa 
+    e justifique sucintamente. A sequência de impressões deve ser apresentada de forma destacada. 
+
+    2733 a terminar; *v = 2.
+    2733 terminado; *v = 2, n = 1.
+    n = 1, v = 4, pid = 2734, ppid = 443.
+    2766 a terminar; *v = 4.
+    2766 terminado; *v = 4, n = 2.
+
 
 */
