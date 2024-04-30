@@ -9,6 +9,9 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <wait.h>
 
 #define SHM_NAME "/f5-ex4"
 #define SHM_SIZE 1024

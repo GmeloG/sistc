@@ -3,10 +3,13 @@ sem_t *psem;
 
 int main(int argc, char **argv)
 {
-  //Adicionalmente, garanta que o acesso à memória partilhada é mutuamente exclusivo, seja entre 
-  //ex4-reader e ex4-writer ou entre múltiplas execuções de ex4-writer. 
-  //não sei se assim fica esclusivo
-  psem = sem_open("/sem1", O_CREAT | O_RDWR, 0600, 1); // create se não existir cria se não não cria , read write, 0600 permissões 110 em, 1 valor inicial do semafaro.
+  // Adicionalmente, garanta que o acesso à memória partilhada é mutuamente exclusivo, seja entre
+  // ex4-reader e ex4-writer ou entre múltiplas execuções de ex4-writer.
+  // não sei se assim fica esclusivo
+  //sem_unlink("/sem1"); // fechar o ficheiro do semaforo
+
+
+  psem = sem_open("/sem1", O_CREAT | O_RDWR, 0666, 0); // create se não existir cria se não não cria , read write, 0600 permissões 110 em, 1 valor inicial do semafaro.
 
   int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
   if (shm_fd == -1)
@@ -28,6 +31,8 @@ int main(int argc, char **argv)
     printf("Dados: %s\n", shm_ptr);
     sleep(2);
   }
+
+  sem_close(psem);
 
   return 0;
 }

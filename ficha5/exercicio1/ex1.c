@@ -30,6 +30,9 @@ int main()
     sleep(5);
     printf("%d: *v = %d, n = %d\n", getpid(), v[0], n);
     sem_post(psem); //Esta linha liberta o semáforo, permitindo que o processo filho prossiga.
+    
+    sem_close("/sem1");
+    
     return (0);
 }
 //47569: *v = 2, n = 1

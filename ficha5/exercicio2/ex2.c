@@ -38,6 +38,8 @@ int main()
     waitpid(r, NULL, 0);
   }
 
+  sem_close("/sem1");
+  
   return (0);
 }
 
