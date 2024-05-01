@@ -94,7 +94,7 @@ int my_create_server_socket(char *port)
     exit(1);
   }
 
-  s = socket(PF_INET, SOCK_STREAM, 0);
+  s = socket(AF_INET, SOCK_STREAM, 0);
   if (s == -1)
   {
     perror("socket");

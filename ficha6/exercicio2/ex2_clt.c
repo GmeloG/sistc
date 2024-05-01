@@ -36,7 +36,6 @@ int main(int argc, char *const argv[])
     // print local address
     print_socket_address(socket_descriptor);
 
-
     // read from file and write to socket
     while (1)
     {
@@ -50,7 +49,7 @@ int main(int argc, char *const argv[])
     }
 
     // Receive server reply. Check the difference between both versions of the routine.
-    recv_server_reply1(socket_descriptor);
+    //recv_server_reply1(socket_descriptor);
     // recv_server_reply2(socket_descriptor);
     close(fds);
     close(socket_descriptor);
