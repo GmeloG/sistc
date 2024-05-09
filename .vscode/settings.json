@@ -66,7 +66,8 @@
     "time.h": "c",
     "stat.h": "c",
     "mycommon.h": "c",
-    "netdb.h": "c"
+    "netdb.h": "c",
+    "socket.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

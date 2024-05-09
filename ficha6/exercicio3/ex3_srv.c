@@ -7,15 +7,24 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <fcntl.h>
 
 int my_create_server_socket(char *port);
 void print_address(const struct sockaddr *clt_addr, socklen_t addrlen);
+int myReadLine(int s, char *buf, int count);
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 int main(int argc, char *argv[])
 {
     int new_socket_descriptor, socket_descriptor;
-    int n;
+    int n, counter = 0;
+    char buffer[4096], nEstudante[10], mensagem[2000];
     struct sockaddr clt_addr;
     socklen_t addrlen;
 
@@ -25,10 +34,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // SIGPIPE is sent to the process if a write is made to a closed connection.
-    // By default, SIGPIPE terminates the process. This makes the process to ignore the signal.
     signal(SIGPIPE, SIG_IGN);
-    printf("argv[1]: %s\n", argv[1]);
+
     socket_descriptor = my_create_server_socket(argv[1]);
 
     while (1)
@@ -47,7 +54,6 @@ int main(int argc, char *argv[])
         }
         print_address(&clt_addr, addrlen);
 
-        // Create a new process for each accepted connection
         pid_t pid = fork();
         if (pid < 0)
         {
@@ -55,45 +61,67 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        // Child process
         if (pid == 0)
         {
-            char filename[11];
-            strcpy(filename, "fileXXXXXX");
-            int fdd = mkstemp(filename);
-            if (fdd == -1)
+
+            n = read(new_socket_descriptor, buffer, sizeof(buffer));
+            buffer[n] = '\0';
+            strcpy(nEstudante, buffer);
+            printf("Numero do aluno: %s\n", nEstudante);
+
+            n = read(new_socket_descriptor, buffer, sizeof(buffer));
+            buffer[n] = '\0';
+            strcpy(mensagem, buffer);
+            printf("Mensagem: %s\n", mensagem);
+
+            if (n >= sizeof(buffer))
+                break;
+
+            for (int i = 0; i < n; i++)
             {
-                perror("open destination");
-                return 1;
+                mensagem[i] = toupper(mensagem[i]);
             }
 
-            while (1)
+            strcat(mensagem, nEstudante);
+
+            if (write(new_socket_descriptor, mensagem, strlen(mensagem)) == -1)
             {
-                sleep(10); // Sleep before each read
-
-                n = read(new_socket_descriptor, &c, 1);
-                if (n <= 0)
-                    break;
-                
-                write(fdd, &c, 1);
-
-                write(new_socket_descriptor, &c, 1);
+                perror("write");
+                break;
             }
+
             close(new_socket_descriptor);
-            close(fdd);
 
-            exit(0); // End the child process
+            exit(0);
         }
         else
         {
-            // Parent process
-            close(new_socket_descriptor); // Close the new socket descriptor in the parent process
+            close(new_socket_descriptor);
         }
     }
 
-    close(socket_descriptor);
-
     return 0;
+}
+int myReadLine1(int s, char *buf, int count)
+{
+    int r, n = 0;
+    if (count <= 0)
+        return 0;
+    else if (count == 1)
+    {
+        buf[0] = 0;
+        return 0;
+    }
+    else
+        --count; // leave space for '\0'
+    do
+    {
+        r = read(s, buf + n, 1);
+        if (r == 1)
+            ++n;
+    } while (r == 1 && n < count && buf[n - 1] != '\n');
+    buf[n] = '\0';
+    return n;
 }
 
 void print_address(const struct sockaddr *clt_addr, socklen_t addrlen)
@@ -116,7 +144,6 @@ int my_create_server_socket(char *port)
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     r = getaddrinfo(NULL, port, &hints, &a);
     if (r != 0)
@@ -125,7 +152,7 @@ int my_create_server_socket(char *port)
         exit(1);
     }
 
-    s = socket(PF_INET, SOCK_STREAM, 0);
+    s = socket(AF_INET, SOCK_STREAM, 0);
     if (s == -1)
     {
         perror("socket");

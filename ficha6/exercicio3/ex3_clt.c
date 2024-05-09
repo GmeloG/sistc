@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 
+
 void recv_server_reply1(int);
 void recv_server_reply2(int);
 int my_connect(char *servername, char *port);
@@ -14,44 +15,28 @@ void print_socket_address(int sd);
 
 int main(int argc, char *const argv[])
 {
-    char buffer[4096];
+    char nEstudante[]="1211710", mensagem[2000];
 
-    if (argc != 4)
+    if (argc != 3)
     {
         printf("usage: %s source\n", argv[0]);
         return 1;
     }
-
-    // open file
-    int fds = open(argv[3], O_RDONLY);
-    if (fds == -1)
-    {
-        perror("open source");
-        return 1;
-    }
-
     // connect to server
     int socket_descriptor = my_connect(argv[1], argv[2]);
 
     // print local address
     print_socket_address(socket_descriptor);
 
-    // read from file and write to socket
-    while (1)
-    {
-        // read from file
-        int n = read(fds, buffer, sizeof(buffer));
-        if (n <= 0) // means the end of file was reached
-            break;
+    printf("Introduza a messagem a enviar:\t");
+    scanf("%s", mensagem);
 
-        // write buffer contents to socket
-        write(socket_descriptor, buffer, n);
-    }
+    // write buffer contents to socket
+    write(socket_descriptor, mensagem, strlen(mensagem));
+    //write(socket_descriptor, "\n", 1);
+    write(socket_descriptor, nEstudante, sizeof(nEstudante));
+    //write(socket_descriptor, "\n", 1);
 
-    // Receive server reply. Check the difference between both versions of the routine.
-    // recv_server_reply1(socket_descriptor);
-    // recv_server_reply2(socket_descriptor);
-    close(fds);
     close(socket_descriptor);
 
     return 0;
@@ -91,44 +76,6 @@ int my_connect(char *servername, char *port)
 
     freeaddrinfo(addrs);
     return s;
-}
-
-// version 1 - prints server reply as it receives it (by parts)
-void recv_server_reply1(int s)
-{
-    char buf[4096];
-
-    printf("Reply from server: ");
-    while (1)
-    {
-        int n = read(s, buf, sizeof(buf) - 1);
-        if (n == 0)
-            break;
-        buf[n] = 0; // terminate string (read does not do this)
-        printf(buf);
-        fflush(stdout);
-    }
-
-    printf("\n\n");
-}
-
-// version 2 - receives whole answer and then prints it
-void recv_server_reply2(int s)
-{
-    char buf[4096];
-
-    int bytes_recv = 0;
-    while (1)
-    {
-        int n = read(s, buf + bytes_recv, sizeof(buf) - 1 - bytes_recv);
-        if (n == 0)
-            break;
-
-        bytes_recv += n;
-    }
-
-    buf[bytes_recv] = 0; // terminate string (read does not do this)
-    printf("Reply from server: %s\n\n", buf);
 }
 
 void print_socket_address(int sd)
