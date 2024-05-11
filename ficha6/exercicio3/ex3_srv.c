@@ -7,24 +7,18 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 int my_create_server_socket(char *port);
 void print_address(const struct sockaddr *clt_addr, socklen_t addrlen);
 int myReadLine(int s, char *buf, int count);
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 int main(int argc, char *argv[])
 {
     int new_socket_descriptor, socket_descriptor;
     int n, counter = 0;
-    char buffer[4096], nEstudante[10], mensagem[2000];
+    char buffer[4096], nEstudante[10], mensagem[2000], studentName[100];
     struct sockaddr clt_addr;
     socklen_t addrlen;
 
@@ -34,9 +28,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    signal(SIGPIPE, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN); // ignore SIGPIPE
 
-    socket_descriptor = my_create_server_socket(argv[1]);
+    socket_descriptor = my_create_server_socket(argv[1]);  
 
     while (1)
     {
@@ -44,7 +38,7 @@ int main(int argc, char *argv[])
 
         printf("Waiting connection\n");
 
-        addrlen = sizeof(clt_addr);
+        addrlen = sizeof(clt_addr); 
         new_socket_descriptor = accept(socket_descriptor, &clt_addr, &addrlen);
         if (new_socket_descriptor < 0)
         {
@@ -63,33 +57,52 @@ int main(int argc, char *argv[])
 
         if (pid == 0)
         {
+            memset(nEstudante, 0, sizeof(nEstudante)); //clear array student number
+            fflush(stdout); // clear output buffer
+            n = read(new_socket_descriptor, nEstudante, sizeof(nEstudante)); // read student number from client
+            nEstudante[n] = '\0'; // add null terminator
+            printf("Numero do aluno: %s", nEstudante);
 
-            n = read(new_socket_descriptor, buffer, sizeof(buffer));
-            buffer[n] = '\0';
-            strcpy(nEstudante, buffer);
-            printf("Numero do aluno: %s\n", nEstudante);
-
-            n = read(new_socket_descriptor, buffer, sizeof(buffer));
+            memset(buffer, 0, sizeof(buffer)); // clear array buffer
+            memset(mensagem, 0, sizeof(mensagem)); // clear array message
+            fflush(stdout);
+            n = read(new_socket_descriptor, buffer, sizeof(buffer));    // read message from client
             buffer[n] = '\0';
             strcpy(mensagem, buffer);
-            printf("Mensagem: %s\n", mensagem);
+            
 
             if (n >= sizeof(buffer))
-                break;
+            {
+                perror("Messagem com texto maior que o buffer\n");
+                close(socket_descriptor);
+                exit(1);
+            }
+            fflush(stdout);
+            printf("Mensagem recebida: %s\n", mensagem);
 
             for (int i = 0; i < n; i++)
             {
                 mensagem[i] = toupper(mensagem[i]);
             }
 
-            strcat(mensagem, nEstudante);
-
-            if (write(new_socket_descriptor, mensagem, strlen(mensagem)) == -1)
+            if (strcmp(nEstudante, "1211710\n") == 0)
+            {
+                strcpy(studentName,"Goncalo Melo Goncalves");
+            }
+            else
+            {
+                strcpy(studentName,"Aluno desconhecido");
+            }
+            
+            fflush(stdout);
+            strcat(mensagem, studentName);
+            if (write(new_socket_descriptor, mensagem, strlen(mensagem)) == -1) // send message to client with student name
             {
                 perror("write");
                 break;
             }
 
+            printf("Waiting connection\n");
             close(new_socket_descriptor);
 
             exit(0);

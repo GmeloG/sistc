@@ -7,16 +7,17 @@
 #include <netdb.h>
 #include <fcntl.h>
 
+#define bufferSize 2000
 
-void recv_server_reply1(int);
-void recv_server_reply2(int);
 int my_connect(char *servername, char *port);
 void print_socket_address(int sd);
 
 int main(int argc, char *const argv[])
 {
-    char nEstudante[]="1211710", mensagem[2000];
-
+    char studentNumber[] = "1211710\n", message[bufferSize];
+    char *line1, *line2;
+    int nbytes;
+    // check arguments is equal to 3 if not print usage
     if (argc != 3)
     {
         printf("usage: %s source\n", argv[0]);
@@ -28,14 +29,78 @@ int main(int argc, char *const argv[])
     // print local address
     print_socket_address(socket_descriptor);
 
-    printf("Introduza a messagem a enviar:\t");
-    scanf("%s", mensagem);
+    // write student number to socket
+    nbytes = write(socket_descriptor, studentNumber, sizeof(studentNumber));
+    if (nbytes == -1)
+    {
+        perror("write message:");
+        close(socket_descriptor);
+        exit(1);
+    }
 
-    // write buffer contents to socket
-    write(socket_descriptor, mensagem, strlen(mensagem));
-    //write(socket_descriptor, "\n", 1);
-    write(socket_descriptor, nEstudante, sizeof(nEstudante));
-    //write(socket_descriptor, "\n", 1);
+    // read from stdin the message from the user
+    do
+    {
+        fflush(stdout); // clear output buffer
+        printf("\n");   
+        printf("Intruduza a messagem a enviar:\n");
+
+        int ch; // character read from stdin
+        int i = 0;
+        while ((ch = getchar()) != '\n' && ch != EOF)   // read until newline or EOF
+        {
+            if (i < sizeof(message) - 1)    // check if there is space in the buffer
+            {
+                message[i] = ch;
+                i++;
+            }
+        }
+        message[i] = '\n';
+
+        if (strlen(message) <= 1)   // check if the message is empty
+        {
+            continue;
+        }
+
+        break;
+    } while (1);
+
+    // write message contents to socket 
+    nbytes = write(socket_descriptor, message, strlen(message)); 
+    if (nbytes == -1)
+    {
+        perror("write student number:");
+        close(socket_descriptor);
+        exit(1);
+    }
+
+    // Receiving response from server
+    char response[bufferSize];
+    nbytes = read(socket_descriptor, response, sizeof(response));
+    if (nbytes == -1)
+    {
+        perror("read from socket");
+        close(socket_descriptor);
+        exit(1);
+    }
+    response[nbytes] = '\0'; // null terminate the string
+
+    line1 = strtok(response, "\n"); // parse the message
+    if (line1 == NULL)
+    {
+        printf("Error parsing the message\n");
+    }
+
+    line2 = strtok(NULL, "\n"); // parse the student name
+    if (line2 == NULL)
+    {
+        printf("Error parsing the student name\n");
+    }
+
+    printf("message: %s\n"
+           "Nome: %s\n"
+           "Total: %d\n",
+           line1, line2, nbytes);
 
     close(socket_descriptor);
 
