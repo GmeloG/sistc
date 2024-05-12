@@ -67,7 +67,10 @@
     "stat.h": "c",
     "mycommon.h": "c",
     "netdb.h": "c",
-    "socket.h": "c"
+    "socket.h": "c",
+    "string.h": "c",
+    "types.h": "c",
+    "inet.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

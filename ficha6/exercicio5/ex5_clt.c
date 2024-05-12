@@ -6,17 +6,34 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <ctype.h>
 
 #define bufferSize 2000
 
+// # function prototypes #//
 int my_connect(char *servername, char *port);
 void print_socket_address(int sd);
 
+// # struct definitions #//
+typedef struct
+{
+    char student_id[9];
+    char text[2000]; // should be ‘\0’ terminated
+} msg1_t;
+
+typedef struct
+{
+    char text[2000];        // should be ‘\0’ terminated
+    char student_name[100]; // should be ‘\0’ terminated
+} msg2_t;
+
 int main(int argc, char *const argv[])
 {
-    char studentNumber[] = "1211710\n", message[bufferSize],response[bufferSize];
-    char *line1, *line2;
+    msg1_t msg1;
+    msg2_t msg2;
+
     int nbytes;
+
     // check arguments is equal to 3 if not print usage
     if (argc != 3)
     {
@@ -29,35 +46,28 @@ int main(int argc, char *const argv[])
     // print local address
     print_socket_address(socket_descriptor);
 
-    // write student number to socket
-    nbytes = write(socket_descriptor, studentNumber, sizeof(studentNumber));
-    if (nbytes == -1)
-    {
-        perror("write message:");
-        close(socket_descriptor);
-        exit(1);
-    }
-
+    // Preenchimento e envio de msg1
+    strcpy(msg1.student_id, "1211710");
     // read from stdin the message from the user
     do
     {
         fflush(stdout); // clear output buffer
-        printf("\n");   
+        printf("\n");
         printf("Intruduza a messagem a enviar:\n");
 
         int ch; // character read from stdin
         int i = 0;
-        while ((ch = getchar()) != '\n' && ch != EOF)   // read until newline or EOF
+        while ((ch = getchar()) != '\n' && ch != EOF) // read until newline or EOF
         {
-            if (i < sizeof(message) - 1)    // check if there is space in the buffer
+            if (i < sizeof(msg1.text) - 1) // check if there is space in the buffer
             {
-                message[i] = ch;
+                msg1.text[i] = ch;
                 i++;
             }
         }
-        message[i] = '\n';
+        msg1.text[i] = '\n';
 
-        if (strlen(message) <= 1)   // check if the message is empty
+        if (strlen(msg1.text) <= 1) // check if the message is empty
         {
             continue;
         }
@@ -65,42 +75,27 @@ int main(int argc, char *const argv[])
         break;
     } while (1);
 
-    // write message contents to socket 
-    nbytes = write(socket_descriptor, message, strlen(message)); 
+    printf("Mensagem enviada: %s", msg1.text);
+    printf("Numero do estudante: %s\n", msg1.student_id);
+    nbytes=send(socket_descriptor, &msg1, sizeof(msg1), 0);
     if (nbytes == -1)
     {
-        perror("write student number:");
+        perror("send message:");
         close(socket_descriptor);
         exit(1);
     }
 
-    // Receiving response from server
-    
-    nbytes = read(socket_descriptor, response, sizeof(response));
+    // Recebimento e processamento de msg2
+    nbytes = recv(socket_descriptor, &msg2, sizeof(msg2), 0);
     if (nbytes == -1)
     {
-        perror("read from socket");
+        perror("receive message:");
         close(socket_descriptor);
         exit(1);
     }
-    response[nbytes] = '\0'; // null terminate the string
 
-    line1 = strtok(response, "\n"); // parse the message
-    if (line1 == NULL)
-    {
-        printf("Error parsing the message\n");
-    }
-
-    line2 = strtok(NULL, "\n"); // parse the student name
-    if (line2 == NULL)
-    {
-        printf("Error parsing the student name\n");
-    }
-
-    printf("message: %s\n"
-           "Nome: %s\n"
-           "Total: %d\n",
-           line1, line2, nbytes);
+    printf("Mensagem recebida: %s\n", msg2.text);
+    printf("Nome do estudante: %s\n", msg2.student_name);
 
     close(socket_descriptor);
 

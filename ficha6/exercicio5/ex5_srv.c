@@ -10,17 +10,36 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+// # function prototypes #//
 int my_create_server_socket(char *port);
 void print_address(const struct sockaddr *clt_addr, socklen_t addrlen);
 int myReadLine(int s, char *buf, int count);
+void upperCase(char *str2,char *str1);
+
+// # struct definitions #//
+typedef struct
+{
+    char student_id[7];
+    char text[2000]; // should be ‘\0’ terminated
+} msg1_t;
+
+typedef struct
+{
+    char text[2000];        // should be ‘\0’ terminated
+    char student_name[100]; // should be ‘\0’ terminated
+} msg2_t;
 
 int main(int argc, char *argv[])
 {
-    int new_socket_descriptor, socket_descriptor;
-    int nbytes, counter = 0;
-    char buffer[4096], studentNumber[10], mensagem[2000], studentName[100];
+
     struct sockaddr clt_addr;
     socklen_t addrlen;
+
+    msg1_t msg1;
+    msg2_t msg2;
+
+    int new_socket_descriptor, socket_descriptor; // socfd socket file descriptor
+    int nbytes;
 
     if (argc != 2)
     {
@@ -30,15 +49,13 @@ int main(int argc, char *argv[])
 
     signal(SIGPIPE, SIG_IGN); // ignore SIGPIPE
 
-    socket_descriptor = my_create_server_socket(argv[1]);  
+    socket_descriptor = my_create_server_socket(argv[1]);
 
     while (1)
     {
-        char c;
-
         printf("Waiting connection\n");
 
-        addrlen = sizeof(clt_addr); 
+        addrlen = sizeof(clt_addr);
         new_socket_descriptor = accept(socket_descriptor, &clt_addr, &addrlen);
         if (new_socket_descriptor < 0)
         {
@@ -57,49 +74,35 @@ int main(int argc, char *argv[])
 
         if (pid == 0)
         {
-            memset(studentNumber, 0, sizeof(studentNumber)); //clear array student number
-            fflush(stdout); // clear output buffer
-            nbytes = read(new_socket_descriptor, studentNumber, sizeof(studentNumber)); // read student number from client
-            studentNumber[nbytes] = '\0'; // add null terminator
-            printf("Numero do aluno: %s", studentNumber);
 
-            memset(buffer, 0, sizeof(buffer)); // clear array buffer
-            memset(mensagem, 0, sizeof(mensagem)); // clear array message
-            fflush(stdout);
-            nbytes = read(new_socket_descriptor, buffer, sizeof(buffer));    // read message from client
-            buffer[nbytes] = '\0';
-            strcpy(mensagem, buffer);
-            
-
-            if (nbytes >= sizeof(buffer))
+            nbytes = recv(new_socket_descriptor, &msg1, sizeof(msg1), 0);
+            if (nbytes == -1)
             {
-                perror("Messagem com texto maior que o buffer\n");
+                perror("receive message:");
                 close(socket_descriptor);
                 exit(1);
             }
-            fflush(stdout);
-            printf("Mensagem recebida: %s\n", mensagem);
+            printf("Mensagem recebida: %s\n", msg1.text);
+            printf("Numero do estudante: %s\n", msg1.student_id);
 
-            for (int i = 0; i < nbytes; i++)
-            {
-                mensagem[i] = toupper(mensagem[i]);
-            }
+            upperCase(msg2.text,msg1.text); // convert student number to uppercase
+            strcpy(msg2.text, msg1.text);    // copy msg1 text to msg2 text
 
-            if (strcmp(studentNumber, "1211710\n") == 0)
+            if (strcmp(msg1.student_id, "1211710") == 0)
             {
-                strcpy(studentName,"Goncalo Melo Goncalves");
+                strcpy(msg2.student_name, "Goncalo Melo Goncalves");
             }
             else
             {
-                strcpy(studentName,"Aluno desconhecido");
+                strcpy(msg2.student_name, "Aluno desconhecido");
             }
-            
-            fflush(stdout);
-            strcat(mensagem, studentName);
-            if (write(new_socket_descriptor, mensagem, strlen(mensagem)) == -1) // send message to client with student name
+
+            nbytes = send(new_socket_descriptor, &msg2, sizeof(msg2), 0);
+            if (nbytes == -1)
             {
-                perror("write");
-                break;
+                perror("send message:");
+                close(socket_descriptor);
+                exit(1);
             }
 
             printf("Waiting connection\n");
@@ -115,6 +118,19 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+
+// converts a string to uppercase and stores it in another string
+// str2 is the string where the converted string will be stored
+// str1 is the string to be converted
+void upperCase(char *str2, char *str1)
+{
+    for (int i = 0; str1[i] != '\0'; i++)
+    {
+        str2[i] = toupper(str1[i]);
+    }
+}
+
 int myReadLine1(int s, char *buf, int count)
 {
     int r, n = 0;
