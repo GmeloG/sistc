@@ -104,11 +104,11 @@ int main(int argc, char *argv[])
             }
 
             printf("Mensagem recebida: %s", msg1.text);
-            printf("Numero do estudante: %s", msg1.student_id);
+            printf("Numero do estudante: %.7s \n", msg1.student_id);
 
             upperCase(msg2.text, msg1.text); // convert student number to uppercase
 
-            if (strcmp(msg1.student_id, "1211710\n") == 0)
+            if (strncmp(msg1.student_id, "1211710",7) == 0)//string compare with 7 characters to avoid the \n
             {
                 strcpy(msg2.student_name, "Goncalo Melo Goncalves\n");
             }

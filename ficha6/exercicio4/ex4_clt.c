@@ -17,7 +17,7 @@ void print_socket_address(int sd);
 // # struct definitions #//
 typedef struct
 {
-    char student_id[9];
+    char student_id[7];
     char text[2000]; // should be ‘\0’ terminated
 } msg1_t;
 
@@ -47,7 +47,7 @@ int main(int argc, char *const argv[])
     print_socket_address(socket_descriptor);
 
     // Preenchimento e envio de msg1
-    strcpy(msg1.student_id, "1211710\n");
+    strcpy(msg1.student_id, "1211710");
     // Reading message from stdin
     do
     {
@@ -64,7 +64,7 @@ int main(int argc, char *const argv[])
     } while (1);
 
     printf("Mensagem enviada: %s", msg1.text);
-    printf("Numero do estudante: %s", msg1.student_id);
+    printf("Numero do estudante: %.7s", msg1.student_id);
 
     // Sending message to server
     if (write(socket_descriptor, &msg1, sizeof(msg1)) == -1)
