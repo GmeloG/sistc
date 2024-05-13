@@ -14,7 +14,7 @@ void print_socket_address(int sd);
 
 int main(int argc, char *const argv[])
 {
-    char studentNumber[] = "1211710\n", message[bufferSize],response[bufferSize];
+    char buffer[4096], studentNumber[] = "1211710\n", message[bufferSize],response[bufferSize];
     char *line1, *line2;
     int nbytes;
     // check arguments is equal to 3 if not print usage
@@ -28,15 +28,6 @@ int main(int argc, char *const argv[])
 
     // print local address
     print_socket_address(socket_descriptor);
-
-    // write student number to socket
-    nbytes = write(socket_descriptor, studentNumber, sizeof(studentNumber));
-    if (nbytes == -1)
-    {
-        perror("write message:");
-        close(socket_descriptor);
-        exit(1);
-    }
 
     // read from stdin the message from the user
     do
@@ -64,9 +55,13 @@ int main(int argc, char *const argv[])
 
         break;
     } while (1);
+    memset(buffer, 0, sizeof(buffer)); // clear buffer
+    strcat(buffer, studentNumber); // append student number to the message
+    strcat(buffer, message); // append message to the buffer
+    printf("Sending message: %s\n", buffer);
 
     // write message contents to socket 
-    nbytes = write(socket_descriptor, message, strlen(message)); 
+    nbytes = write(socket_descriptor, buffer, strlen(buffer)); 
     if (nbytes == -1)
     {
         perror("write student number:");
@@ -75,7 +70,6 @@ int main(int argc, char *const argv[])
     }
 
     // Receiving response from server
-    
     nbytes = read(socket_descriptor, response, sizeof(response));
     if (nbytes == -1)
     {
