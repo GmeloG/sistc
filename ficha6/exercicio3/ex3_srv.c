@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 int my_create_server_socket(char *port);
 void print_address(const struct sockaddr *clt_addr, socklen_t addrlen);
@@ -60,6 +61,23 @@ int main(int argc, char *argv[])
 
         if (pid == 0)
         {
+            struct timeval timeout;
+            timeout.tv_sec = 5;
+            timeout.tv_usec = 0;
+
+            // Configurando o conjunto de descritores de arquivo para select
+            fd_set read_fds;
+            FD_ZERO(&read_fds);
+            FD_SET(new_socket_descriptor, &read_fds);
+
+            // Chamando select para verificar se há dados prontos para serem lidos
+            while (select(new_socket_descriptor + 1, &read_fds, NULL, NULL, &timeout) <= 0)
+            {
+                printf("Mensagem nao recebida em 5s\n");
+                close(new_socket_descriptor);
+                exit(1);
+            }
+
             memset(buffer, 0, sizeof(buffer));     // clear array buffer
             memset(mensagem, 0, sizeof(mensagem)); // clear array message
             fflush(stdout);

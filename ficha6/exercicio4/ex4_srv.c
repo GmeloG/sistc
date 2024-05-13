@@ -9,17 +9,18 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/select.h>
 
 // # function prototypes #//
 int my_create_server_socket(char *port);
 void print_address(const struct sockaddr *clt_addr, socklen_t addrlen);
 int myReadLine(int s, char *buf, int count);
-void upperCase(char *str2,char *str1);
+void upperCase(char *str2, char *str1);
 
 // # struct definitions #//
 typedef struct
 {
-    char student_id[7];
+    char student_id[9];
     char text[2000]; // should be ‘\0’ terminated
 } msg1_t;
 
@@ -75,30 +76,49 @@ int main(int argc, char *argv[])
         if (pid == 0)
         {
 
-            nbytes = recv(new_socket_descriptor, &msg1, sizeof(msg1), 0);
-            if (nbytes == -1)
+            msg1_t msg1;
+            msg2_t msg2;
+
+            struct timeval timeout;
+            timeout.tv_sec = 5;
+            timeout.tv_usec = 0;
+
+            // Configurando o conjunto de descritores de arquivo para select
+            fd_set read_fds;
+            FD_ZERO(&read_fds);
+            FD_SET(new_socket_descriptor, &read_fds);
+
+            // Chamando select para verificar se há dados prontos para serem lidos
+            while (select(new_socket_descriptor + 1, &read_fds, NULL, NULL, &timeout) <= 0)
             {
-                perror("receive message:");
+                printf("Mensagem nao recebida em 5s\n");
+                close(new_socket_descriptor);
+                exit(1);
+            }
+
+            if (read(new_socket_descriptor, &msg1, sizeof(msg1)) == -1)
+            {
+                perror("error write\n");
                 close(socket_descriptor);
                 exit(1);
             }
-            printf("Mensagem recebida: %s\n", msg1.text);
-            printf("Numero do estudante: %s\n", msg1.student_id);
 
-            upperCase(msg2.text,msg1.text); // convert student number to uppercase
-            strcpy(msg2.text, msg1.text);    // copy msg1 text to msg2 text
+            printf("Mensagem recebida: %s", msg1.text);
+            printf("Numero do estudante: %s", msg1.student_id);
 
-            if (strcmp(msg1.student_id, "1211710") == 0)
+            upperCase(msg2.text, msg1.text); // convert student number to uppercase
+
+            if (strcmp(msg1.student_id, "1211710\n") == 0)
             {
-                strcpy(msg2.student_name, "Goncalo Melo Goncalves");
+                strcpy(msg2.student_name, "Goncalo Melo Goncalves\n");
             }
             else
             {
-                strcpy(msg2.student_name, "Aluno desconhecido");
+                strcpy(msg2.student_name, "Aluno desconhecido\n");
             }
 
-            nbytes = send(new_socket_descriptor, &msg2, sizeof(msg2), 0);
-            if (nbytes == -1)
+            // sending to server
+            if (write(new_socket_descriptor, &msg2, sizeof(msg2)) == -1)
             {
                 perror("send message:");
                 close(socket_descriptor);
@@ -118,7 +138,6 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
 
 // converts a string to uppercase and stores it in another string
 // str2 is the string where the converted string will be stored

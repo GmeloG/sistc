@@ -47,27 +47,15 @@ int main(int argc, char *const argv[])
     print_socket_address(socket_descriptor);
 
     // Preenchimento e envio de msg1
-    strcpy(msg1.student_id, "1211710");
-    // read from stdin the message from the user
+    strcpy(msg1.student_id, "1211710\n");
+    // Reading message from stdin
     do
     {
-        fflush(stdout); // clear output buffer
         printf("\n");
-        printf("Intruduza a messagem a enviar:\n");
+        printf("Enter message (max 2000 bytes):\n");
+        fgets(msg1.text, sizeof(msg1.text), stdin);
 
-        int ch; // character read from stdin
-        int i = 0;
-        while ((ch = getchar()) != '\n' && ch != EOF) // read until newline or EOF
-        {
-            if (i < sizeof(msg1.text) - 1) // check if there is space in the buffer
-            {
-                msg1.text[i] = ch;
-                i++;
-            }
-        }
-        msg1.text[i] = '\n';
-
-        if (strlen(msg1.text) <= 1) // check if the message is empty
+        if (strlen(msg1.text) <= 1 || strchr(msg1.text, '\n') == NULL)
         {
             continue;
         }
@@ -76,26 +64,27 @@ int main(int argc, char *const argv[])
     } while (1);
 
     printf("Mensagem enviada: %s", msg1.text);
-    printf("Numero do estudante: %s\n", msg1.student_id);
-    nbytes=send(socket_descriptor, &msg1, sizeof(msg1), 0);
-    if (nbytes == -1)
+    printf("Numero do estudante: %s", msg1.student_id);
+
+    // Sending message to server
+    if (write(socket_descriptor, &msg1, sizeof(msg1)) == -1)
     {
-        perror("send message:");
+        perror("error write\n");
         close(socket_descriptor);
         exit(1);
     }
 
     // Recebimento e processamento de msg2
-    nbytes = recv(socket_descriptor, &msg2, sizeof(msg2), 0);
-    if (nbytes == -1)
+    if (read(socket_descriptor, &msg2, sizeof(msg2)) == -1)
     {
         perror("receive message:");
         close(socket_descriptor);
         exit(1);
     }
-
-    printf("Mensagem recebida: %s\n", msg2.text);
-    printf("Nome do estudante: %s\n", msg2.student_name);
+    printf("\n\nReceived message\n");
+    printf("Mensagem recebida: %s", msg2.text);
+    printf("Nome do estudante: %s", msg2.student_name);
+    printf("Tamanho da mensagem e nome de estudante: %ld\n", (strlen(msg2.text)+strlen(msg2.student_name)));
 
     close(socket_descriptor);
 

@@ -14,7 +14,7 @@ void print_socket_address(int sd);
 
 int main(int argc, char *const argv[])
 {
-    char buffer[4096], studentNumber[] = "1211710\n", message[bufferSize],response[bufferSize];
+    char buffer[4096], studentNumber[] = "1211710\n", message[bufferSize], response[bufferSize];
     char *line1, *line2;
     int nbytes;
     // check arguments is equal to 3 if not print usage
@@ -29,39 +29,28 @@ int main(int argc, char *const argv[])
     // print local address
     print_socket_address(socket_descriptor);
 
-    // read from stdin the message from the user
+    // Reading message from stdin
     do
     {
-        fflush(stdout); // clear output buffer
-        printf("\n");   
-        printf("Intruduza a messagem a enviar:\n");
+        printf("\n");
+        printf("Enter message (max 2000 bytes):\n");
+        fgets(message, sizeof(message), stdin);
 
-        int ch; // character read from stdin
-        int i = 0;
-        while ((ch = getchar()) != '\n' && ch != EOF)   // read until newline or EOF
-        {
-            if (i < sizeof(message) - 1)    // check if there is space in the buffer
-            {
-                message[i] = ch;
-                i++;
-            }
-        }
-        message[i] = '\n';
-
-        if (strlen(message) <= 1)   // check if the message is empty
+        if (strlen(message) <= 1 || strchr(message, '\n') == NULL)
         {
             continue;
         }
 
         break;
     } while (1);
+
     memset(buffer, 0, sizeof(buffer)); // clear buffer
-    strcat(buffer, studentNumber); // append student number to the message
-    strcat(buffer, message); // append message to the buffer
+    strcat(buffer, studentNumber);     // append student number to the message
+    strcat(buffer, message);           // append message to the buffer
     printf("Sending message: %s\n", buffer);
 
-    // write message contents to socket 
-    nbytes = write(socket_descriptor, buffer, strlen(buffer)); 
+    // write message contents to socket
+    nbytes = write(socket_descriptor, buffer, strlen(buffer));
     if (nbytes == -1)
     {
         perror("write student number:");
