@@ -58,6 +58,8 @@ int main(int argc, char *argv[])
         // Child process
         if (pid == 0)
         {
+            sleep(10); // espera antes de cada leitura
+            
             char filename[11];
             strcpy(filename, "fileXXXXXX");
             int fdd = mkstemp(filename);
