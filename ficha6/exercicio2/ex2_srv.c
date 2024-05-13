@@ -69,7 +69,6 @@ int main(int argc, char *argv[])
 
             while (1)
             {
-                sleep(10); // Sleep before each read
 
                 n = read(new_socket_descriptor, &c, 1);
                 if (n <= 0)
