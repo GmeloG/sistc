@@ -30,6 +30,9 @@ typedef struct
 
 int main(int argc, char *const argv[])
 {
+    /* Adicionar esta linha no início da função main de cada programa */
+    printf("1211710 - %s\n", __FILE__);
+
     msg1_t msg1;
     msg2_t msg2;
 
@@ -40,7 +43,7 @@ int main(int argc, char *const argv[])
     // check arguments is equal to 3 if not print usage
     if (argc != 3)
     {
-        printf("usage: %s source\n", argv[0]);
+        printf("usage: %s <server ip> <porto>\n", argv[0]);
         return 1;
     }
     // connect to server
@@ -68,11 +71,6 @@ int main(int argc, char *const argv[])
 
     sprintf(buffer, "%.7s%ld\n%s", msg1.student_id, strlen(msg1.text), msg1.text);
 
-    // printf("student_id= %.7s\n", msg1.student_id);
-    // printf("text= %s", msg1.text);
-    // printf("nbytes text: %ld\n", strlen(msg1.text));
-    // printf("Messagem a enivar buffer= %s", buffer);
-
     // Sending message to server
     if (write(socket_descriptor, buffer, sizeof(buffer)) == -1)
     {
@@ -88,9 +86,8 @@ int main(int argc, char *const argv[])
         close(socket_descriptor);
         exit(1);
     }
-    printf("Mensagem recebida buffer cliente: %s \n", buffer);
 
-    // process the received message 
+    // process the received message
     char *next_line;
     nbytes_str = strtol(buffer, &next_line, 10); // strtol converts a string to a long int
     next_line++;                                 // skip the \n
@@ -106,7 +103,7 @@ int main(int argc, char *const argv[])
 
     strcpy(msg2.student_name, next_line); // copy the student name to msg2.student_name
 
-    printf("----------Received message-----------------\n");
+    printf("\n\n--------------Received message-------------------\n");
     printf("Mensagem recebida: %s \n", msg2.text);
     printf("Nome do estudante: %s\n", msg2.student_name);
     printf("Tamanho da mensagem: %d\n", nbytes_str + nbytes_nome);
@@ -162,8 +159,7 @@ void print_socket_address(int sd)
     char hostname[256];
     char port[6];
 
-    int n = getnameinfo((struct sockaddr *)&addr, addrlen, hostname, sizeof(hostname),
-                        port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+    int n = getnameinfo((struct sockaddr *)&addr, addrlen, hostname, sizeof(hostname), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
     if (n != 0)
         printf("%s\n", gai_strerror(n));
     else

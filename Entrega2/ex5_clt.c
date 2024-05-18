@@ -6,24 +6,44 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <ctype.h>
+#include <string.h>
 
 #define bufferSize 2000
 
+// # function prototypes #//
 int my_connect(char *servername, char *port);
 void print_socket_address(int sd);
+
+// # struct definitions #//
+typedef struct
+{
+    char student_id[7];
+    char text[2000]; // should be ‘\0’ terminated
+} msg1_t;
+
+typedef struct
+{
+    char text[2000];        // should be ‘\0’ terminated
+    char student_name[100]; // should be ‘\0’ terminated
+} msg2_t;
 
 int main(int argc, char *const argv[])
 {
     /* Adicionar esta linha no início da função main de cada programa */
     printf("1211710 - %s\n", __FILE__);
 
-    char buffer[4096], studentNumber[] = "1211710\n", message[bufferSize], response[bufferSize];
-    char *line1, *line2;
-    int nbytes;
+    msg1_t msg1;
+    msg2_t msg2;
+
+    char buffer[4096];
+    int nbytes, nbytes_str, nbytes_nome;
+    char *text;
+
     // check arguments is equal to 3 if not print usage
     if (argc != 3)
     {
-        printf("usage: %s source\n", argv[0]);
+        printf("usage: %s <server ip> <porto>\n", argv[0]);
         return 1;
     }
     // connect to server
@@ -32,14 +52,16 @@ int main(int argc, char *const argv[])
     // print local address
     print_socket_address(socket_descriptor);
 
+    // Preenchimento e envio de msg1
+    strcpy(msg1.student_id, "1211710");
     // Reading message from stdin
     do
     {
         printf("\n");
         printf("Enter message (max 2000 bytes):\n");
-        fgets(message, sizeof(message), stdin);
+        fgets(msg1.text, sizeof(msg1.text), stdin);
 
-        if (strlen(message) <= 1 || strchr(message, '\n') == NULL)
+        if (strlen(msg1.text) <= 1 || strchr(msg1.text, '\n') == NULL)
         {
             continue;
         }
@@ -47,46 +69,45 @@ int main(int argc, char *const argv[])
         break;
     } while (1);
 
-    memset(buffer, 0, sizeof(buffer)); // clear buffer
-    strcat(buffer, studentNumber);     // append student number to the message
-    strcat(buffer, message);           // append message to the buffer
+    sprintf(buffer, "%.7s%ld\n%s", msg1.student_id, strlen(msg1.text), msg1.text);
 
 
-    // write message contents to socket
-    nbytes = write(socket_descriptor, buffer, strlen(buffer));
-    if (nbytes == -1)
+    // Sending message to server
+    if (write(socket_descriptor, buffer, sizeof(buffer)) == -1)
     {
-        perror("write student number:");
+        perror("error write\n");
         close(socket_descriptor);
         exit(1);
     }
 
-    // Receiving response from server
-    nbytes = read(socket_descriptor, response, sizeof(response));
-    if (nbytes == -1)
+    // Recebimento e processamento de msg2
+    if (read(socket_descriptor, buffer, sizeof(buffer)) == -1)
     {
-        perror("read from socket");
+        perror("receive message:");
         close(socket_descriptor);
         exit(1);
     }
-    response[nbytes] = '\0'; // null terminate the string
 
-    line1 = strtok(response, "\n"); // parse the message
-    if (line1 == NULL)
-    {
-        printf("Error parsing the message\n");
-    }
+    // process the received message 
+    char *next_line;
+    nbytes_str = strtol(buffer, &next_line, 10); // strtol converts a string to a long int
+    next_line++;                                 // skip the \n
 
-    line2 = strtok(NULL, "\n"); // parse the student name
-    if (line2 == NULL)
-    {
-        printf("Error parsing the student name\n");
-    }
-    printf("--------------Recebido do servidor-------------\n");
-    printf("Mensagem: %s\n"
-           "Nome: %s\n"
-           "Total: %d\n",
-           line1, line2, nbytes);
+    char *next_line_after_text = strchr(next_line, '\n'); // find the next line by searching for the first \n
+    // copy the text to the msg2.text
+    memcpy(msg2.text, next_line, next_line_after_text - next_line); // copy the text to the msg2.text
+    next_line = next_line_after_text + 1;                           // skip the \n
+
+    nbytes_nome = strtol(next_line, &next_line_after_text, 10); // convert the next line to a long int o 10 seguinfica que é um numero decimal
+
+    next_line = next_line_after_text + 1; // skip the \n
+
+    strcpy(msg2.student_name, next_line); // copy the student name to msg2.student_name
+
+     printf("\n\n--------------Received message-------------------\n");
+    printf("Mensagem recebida: %s \n", msg2.text);
+    printf("Nome do estudante: %s\n", msg2.student_name);
+    printf("Tamanho da mensagem: %d\n", nbytes_str + nbytes_nome);
 
     close(socket_descriptor);
 

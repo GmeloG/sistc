@@ -7,8 +7,8 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-#define bufferSize 2000
-
+void recv_server_reply1(int);
+void recv_server_reply2(int);
 int my_connect(char *servername, char *port);
 void print_socket_address(int sd);
 
@@ -17,77 +17,44 @@ int main(int argc, char *const argv[])
     /* Adicionar esta linha no início da função main de cada programa */
     printf("1211710 - %s\n", __FILE__);
 
-    char buffer[4096], studentNumber[] = "1211710\n", message[bufferSize], response[bufferSize];
-    char *line1, *line2;
-    int nbytes;
-    // check arguments is equal to 3 if not print usage
-    if (argc != 3)
+    char buffer[4096];
+
+    if (argc != 4)
     {
-        printf("usage: %s source\n", argv[0]);
+        printf("usage: %s <server ip> <porto> <file name>\n", argv[0]);
         return 1;
     }
+
+    // open file
+    int fds = open(argv[3], O_RDONLY);
+    if (fds == -1)
+    {
+        perror("open source");
+        return 1;
+    }
+
     // connect to server
     int socket_descriptor = my_connect(argv[1], argv[2]);
 
     // print local address
     print_socket_address(socket_descriptor);
 
-    // Reading message from stdin
-    do
+    // read from file and write to socket
+    while (1)
     {
-        printf("\n");
-        printf("Enter message (max 2000 bytes):\n");
-        fgets(message, sizeof(message), stdin);
+        // read from file
+        int n = read(fds, buffer, sizeof(buffer));
+        if (n <= 0) // means the end of file was reached
+            break;
 
-        if (strlen(message) <= 1 || strchr(message, '\n') == NULL)
-        {
-            continue;
-        }
-
-        break;
-    } while (1);
-
-    memset(buffer, 0, sizeof(buffer)); // clear buffer
-    strcat(buffer, studentNumber);     // append student number to the message
-    strcat(buffer, message);           // append message to the buffer
-
-
-    // write message contents to socket
-    nbytes = write(socket_descriptor, buffer, strlen(buffer));
-    if (nbytes == -1)
-    {
-        perror("write student number:");
-        close(socket_descriptor);
-        exit(1);
+        // write buffer contents to socket
+        write(socket_descriptor, buffer, n);
     }
 
-    // Receiving response from server
-    nbytes = read(socket_descriptor, response, sizeof(response));
-    if (nbytes == -1)
-    {
-        perror("read from socket");
-        close(socket_descriptor);
-        exit(1);
-    }
-    response[nbytes] = '\0'; // null terminate the string
-
-    line1 = strtok(response, "\n"); // parse the message
-    if (line1 == NULL)
-    {
-        printf("Error parsing the message\n");
-    }
-
-    line2 = strtok(NULL, "\n"); // parse the student name
-    if (line2 == NULL)
-    {
-        printf("Error parsing the student name\n");
-    }
-    printf("--------------Recebido do servidor-------------\n");
-    printf("Mensagem: %s\n"
-           "Nome: %s\n"
-           "Total: %d\n",
-           line1, line2, nbytes);
-
+    // Receive server reply. Check the difference between both versions of the routine.
+    // recv_server_reply1(socket_descriptor);
+    // recv_server_reply2(socket_descriptor);
+    close(fds);
     close(socket_descriptor);
 
     return 0;
@@ -127,6 +94,44 @@ int my_connect(char *servername, char *port)
 
     freeaddrinfo(addrs);
     return s;
+}
+
+// version 1 - prints server reply as it receives it (by parts)
+void recv_server_reply1(int s)
+{
+    char buf[4096];
+
+    printf("Reply from server: ");
+    while (1)
+    {
+        int n = read(s, buf, sizeof(buf) - 1);
+        if (n == 0)
+            break;
+        buf[n] = 0; // terminate string (read does not do this)
+        printf(buf);
+        fflush(stdout);
+    }
+
+    printf("\n\n");
+}
+
+// version 2 - receives whole answer and then prints it
+void recv_server_reply2(int s)
+{
+    char buf[4096];
+
+    int bytes_recv = 0;
+    while (1)
+    {
+        int n = read(s, buf + bytes_recv, sizeof(buf) - 1 - bytes_recv);
+        if (n == 0)
+            break;
+
+        bytes_recv += n;
+    }
+
+    buf[bytes_recv] = 0; // terminate string (read does not do this)
+    printf("Reply from server: %s\n\n", buf);
 }
 
 void print_socket_address(int sd)
