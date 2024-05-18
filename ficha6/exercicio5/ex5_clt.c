@@ -90,29 +90,22 @@ int main(int argc, char *const argv[])
     }
     printf("Mensagem recebida buffer cliente: %s \n", buffer);
 
-
-    char *next_line = NULL;
-    nbytes_str = strtol(buffer, &next_line, 10);
-    next_line++;
-
-    char *next_line_after_text = strchr(next_line, '\n');
     
-    memcpy(msg2.text, next_line, next_line_after_text - next_line);
-    next_line = next_line_after_text + 1;
-
-    nbytes_nome = strtol(next_line, &next_line_after_text, 10);
+    char *next_line;
+    nbytes_str = strtol(buffer, &next_line, 10);    //strtol converts a string to a long int
+    next_line++; // skip the \n
     
-    next_line = next_line_after_text + 1;
+    char *next_line_after_text = strchr(next_line, '\n'); // find the next line by searching for the first \n
+    
+    memcpy(msg2.text, next_line, next_line_after_text - next_line); // copy the text to the msg2.text
+    next_line = next_line_after_text + 1;   // skip the \n
 
-    strcpy(msg2.student_name, next_line);
-    // int num_bytes_str = strlen(msg1.student_id) + strlen(num_bytes) + 1;
+    nbytes_nome = strtol(next_line, &next_line_after_text, 10); // convert the next line to a long int o 10 seguinfica que é um numero decimal
+    
+    next_line = next_line_after_text + 1; // skip the \n
 
-    // Preencher msg1.text
-    /*for (int i = 0; i < atoi(num_bytes) + 1; i++)
-    {
-        msg1.text[i] = buffer[num_bytes_str + i];
-    }*/
-
+    strcpy(msg2.student_name, next_line); // copy the student name to msg2.student_name
+    
     printf("----------Received message-----------------\n");
     printf("Mensagem recebida: %s \n", msg2.text);
     printf("Nome do estudante: %s\n", msg2.student_name);
