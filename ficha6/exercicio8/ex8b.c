@@ -5,39 +5,43 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 
 #define MAX_BUFFER 1024
+#define PORT 3000
 
 int main(int argc, char *argv[])
 {
-  int sd, n;
+  int sd;
   char buffer[MAX_BUFFER];
+  struct sockaddr_in server_addr;
 
-  // addrinfo struct to store the server address
-  struct addrinfo hints, *a;
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;
-
-  if (argc != 3)
+  if (argc != 2)
   {
-    printf("Usage: %s <IP address> <port>\n", argv[0]);
+    printf("Usage: %s <IP address>\n", argv[0]);
     exit(1);
   }
 
-  getaddrinfo(argv[1], argv[2], &hints, &a);
-  sd = socket(AF_INET, SOCK_DGRAM, 0);
+  // Criar socket UDP
+  if ((sd = socket(PF_INET, SOCK_DGRAM, 0)) < 0)
+  {
+    perror("socket");
+    exit(1);
+  }
+
+  // Configurar detalhes do endereço
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(PORT);
+  server_addr.sin_addr.s_addr = inet_addr(argv[1]);
 
   while (1)
   {
     printf("Digite uma mensagem: ");
     fgets(buffer, MAX_BUFFER, stdin);
-    sendto(sd, buffer, strlen(buffer), 0,
-           a->ai_addr, a->ai_addrlen);
-    n = read(sd, buffer, sizeof(buffer) - 1);
-    buffer[n] = '\0';
-    printf("Reply: %s", buffer);
+
+    // Enviar mensagem
+    sendto(sd, buffer, strlen(buffer), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
   }
 
+  close(sd);
   return 0;
 }

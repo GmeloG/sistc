@@ -14,11 +14,14 @@ void print_socket_address(int sd);
 
 int main(int argc, char *const argv[])
 {
+    /* Adicionar esta linha no início da função main de cada programa */
+    printf("1211710 - %s\n", __FILE__);
+
     char buffer[4096];
 
     if (argc != 4)
     {
-        printf("usage: %s source\n", argv[0]);
+        printf("usage: %s <server ip> <porto> <file name>\n", argv[0]);
         return 1;
     }
 

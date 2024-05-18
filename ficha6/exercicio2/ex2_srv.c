@@ -14,6 +14,9 @@ void print_address(const struct sockaddr *clt_addr, socklen_t addrlen);
 
 int main(int argc, char *argv[])
 {
+    /* Adicionar esta linha no início da função main de cada programa */
+    printf("1211710 - %s\n", __FILE__);
+
     int new_socket_descriptor, socket_descriptor;
     int n;
     struct sockaddr clt_addr;
@@ -28,7 +31,6 @@ int main(int argc, char *argv[])
     // SIGPIPE is sent to the process if a write is made to a closed connection.
     // By default, SIGPIPE terminates the process. This makes the process to ignore the signal.
     signal(SIGPIPE, SIG_IGN);
-    printf("argv[1]: %s\n", argv[1]);
     socket_descriptor = my_create_server_socket(argv[1]);
 
     while (1)

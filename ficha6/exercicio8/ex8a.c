@@ -5,41 +5,51 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 
 #define MAX_BUFFER 1024
+#define PORT 3000
 
-int main(int argc, char *argv[])
+int main()
 {
-
-  int socketDescriptor, n; // socket descriptor
+  int socketDescriptor, n;
   char buffer[MAX_BUFFER];
+  struct sockaddr_in server_addr, client_addr;
+  socklen_t addr_size;
 
-  // struct sockaddr_in server_addr para guardar o endereço do servidor
-  struct addrinfo hints, *a;
-  struct sockaddr src_addr;
-  socklen_t src_len;
-
-  if (argc != 2)
+  // Criar socket UDP
+  if ((socketDescriptor = socket(PF_INET, SOCK_DGRAM, 0)) < 0)
   {
-    printf("Usar: %s <IP address>\n", argv[0]);
+    perror("socket");
     exit(1);
   }
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;
-  getaddrinfo(NULL, argv[1], &hints, &a);
 
-  socketDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
-  bind(socketDescriptor, a->ai_addr, a->ai_addrlen);
-  printf("connected to a client\n");
+  // Configurar detalhes do endereço
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(PORT);
+  server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+  // Vincular socket ao endereço
+  if (bind(socketDescriptor, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0)
+  {
+    perror("bind");
+    exit(1);
+  }
+
+  printf("Aguardando mensagens no porto UDP %d...\n", PORT);
+
   while (1)
   {
-    printf("Waiting for message...\n");
-    src_len = sizeof(src_addr);
-    n = recvfrom(socketDescriptor, buffer, sizeof(buffer) - 1, 0,
-                 &src_addr, &src_len);
-    buffer[n] = '\0';
-    printf("Received message: %s", buffer);
-    sendto(socketDescriptor, buffer, n, 0, &src_addr, src_len);
+    addr_size = sizeof(client_addr);
+    n = recvfrom(socketDescriptor, buffer, MAX_BUFFER, 0, (struct sockaddr *)&client_addr, &addr_size);
+    if (n > 0)
+    {
+      buffer[n] = '\0';
+      printf("Mensagem recebida do cliente: %s\n", buffer);
+      printf("Endereço IP do cliente: %s\n", inet_ntoa(client_addr.sin_addr));
+      printf("Porto do cliente: %d\n", ntohs(client_addr.sin_port));
+    }
   }
+
+  close(socketDescriptor);
+  return 0;
 }
