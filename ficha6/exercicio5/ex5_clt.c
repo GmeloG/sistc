@@ -90,26 +90,26 @@ int main(int argc, char *const argv[])
     }
     printf("Mensagem recebida buffer cliente: %s \n", buffer);
 
-    
+    // process the received message 
     char *next_line;
-    nbytes_str = strtol(buffer, &next_line, 10);    //strtol converts a string to a long int
-    next_line++; // skip the \n
-    
+    nbytes_str = strtol(buffer, &next_line, 10); // strtol converts a string to a long int
+    next_line++;                                 // skip the \n
+
     char *next_line_after_text = strchr(next_line, '\n'); // find the next line by searching for the first \n
-    
+    // copy the text to the msg2.text
     memcpy(msg2.text, next_line, next_line_after_text - next_line); // copy the text to the msg2.text
-    next_line = next_line_after_text + 1;   // skip the \n
+    next_line = next_line_after_text + 1;                           // skip the \n
 
     nbytes_nome = strtol(next_line, &next_line_after_text, 10); // convert the next line to a long int o 10 seguinfica que é um numero decimal
-    
+
     next_line = next_line_after_text + 1; // skip the \n
 
     strcpy(msg2.student_name, next_line); // copy the student name to msg2.student_name
-    
+
     printf("----------Received message-----------------\n");
     printf("Mensagem recebida: %s \n", msg2.text);
     printf("Nome do estudante: %s\n", msg2.student_name);
-    printf("Tamanho da mensagem: %d\n", nbytes_str+nbytes_nome);
+    printf("Tamanho da mensagem: %d\n", nbytes_str + nbytes_nome);
 
     close(socket_descriptor);
 
