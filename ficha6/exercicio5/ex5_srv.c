@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
+#include <string.h>
 
 // # function prototypes #//
 int my_create_server_socket(char *port);
@@ -20,7 +21,7 @@ void upperCase(char *str2, char *str1);
 // # struct definitions #//
 typedef struct
 {
-    char student_id[9];
+    char student_id[7];
     char text[2000]; // should be ‘\0’ terminated
 } msg1_t;
 
@@ -40,7 +41,11 @@ int main(int argc, char *argv[])
     msg2_t msg2;
 
     int new_socket_descriptor, socket_descriptor; // socfd socket file descriptor
+    char buffer[4096];
     int nbytes;
+    char nbytes_str;
+    char num_bytes[10];
+    char *text;
 
     if (argc != 2)
     {
@@ -76,9 +81,6 @@ int main(int argc, char *argv[])
         if (pid == 0)
         {
 
-            msg1_t msg1;
-            msg2_t msg2;
-
             struct timeval timeout;
             timeout.tv_sec = 5;
             timeout.tv_usec = 0;
@@ -96,29 +98,48 @@ int main(int argc, char *argv[])
                 exit(1);
             }
 
-            if (read(new_socket_descriptor, &msg1, sizeof(msg1)) == -1)
+            // Receber mensagem do cliente
+            if (read(new_socket_descriptor, &buffer, sizeof(buffer)) == -1)
             {
                 perror("error write\n");
                 close(socket_descriptor);
                 exit(1);
             }
+            //printf("Mensagem recebida do cliente: %s\n", buffer);
 
-            printf("Mensagem recebida: %s", msg1.text);
-            printf("Numero do estudante: %.7s \n", msg1.student_id);
+            // Preencher msg1.student_id e num_bytes
+            sscanf(buffer, "%7s%s\n", msg1.student_id, num_bytes);
+            int num_bytes_str = strlen(msg1.student_id) + strlen(num_bytes) + 1;
 
-            upperCase(msg2.text, msg1.text); // convert student number to uppercase
-
-            if (strncmp(msg1.student_id, "1211710",7) == 0)//string compare with 7 characters to avoid the \n
+            // Preencher msg1.text
+            for (int i = 0; i < atoi(num_bytes) + 1; i++)
             {
-                strcpy(msg2.student_name, "Goncalo Melo Goncalves\n");
+                msg1.text[i] = buffer[num_bytes_str + i];
+            }
+            
+            // Preencher msg2.student_name
+            if (strncmp(msg1.student_id, "1211710", 7) == 0) // string compare with 7 characters to avoid the \n
+            {
+                strcpy(msg2.student_name, "Goncalo Melo Goncalves");
             }
             else
             {
-                strcpy(msg2.student_name, "Aluno desconhecido\n");
+                strcpy(msg2.student_name, "Aluno desconhecido");
             }
+            // Preencher msg2.text para maiosculas
+            upperCase(msg2.text, msg1.text); // convert student number to uppercase
+
+            // Limpar buffer
+            memset(buffer, 0, sizeof(buffer)); // clear array buffer
+
+            // Preencher variavel sprintf
+            sprintf(buffer, "%ld\n%s%ld\n%s", strlen(msg2.text), msg2.text, strlen(msg2.student_name), msg2.student_name);
+
+            // Imprimir mensagem a enviar
+            printf("Mensagem a enviar para o cliente: %s\n", buffer);
 
             // sending to server
-            if (write(new_socket_descriptor, &msg2, sizeof(msg2)) == -1)
+            if (write(new_socket_descriptor, buffer, sizeof(buffer)) == -1)
             {
                 perror("send message:");
                 close(socket_descriptor);

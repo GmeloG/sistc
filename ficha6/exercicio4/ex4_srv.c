@@ -20,7 +20,7 @@ void upperCase(char *str2, char *str1);
 // # struct definitions #//
 typedef struct
 {
-    char student_id[9];
+    char student_id[7];
     char text[2000]; // should be ‘\0’ terminated
 } msg1_t;
 

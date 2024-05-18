@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <string.h>
 
 #define bufferSize 2000
 
@@ -32,7 +33,9 @@ int main(int argc, char *const argv[])
     msg1_t msg1;
     msg2_t msg2;
 
-    int nbytes;
+    char buffer[4096];
+    int nbytes, nbytes_str, nbytes_nome;
+    char *text;
 
     // check arguments is equal to 3 if not print usage
     if (argc != 3)
@@ -63,11 +66,15 @@ int main(int argc, char *const argv[])
         break;
     } while (1);
 
-    printf("Mensagem enviada: %s", msg1.text);
-    printf("Numero do estudante: %.7s", msg1.student_id);
+    sprintf(buffer, "%.7s%ld\n%s", msg1.student_id, strlen(msg1.text), msg1.text);
+
+    // printf("student_id= %.7s\n", msg1.student_id);
+    // printf("text= %s", msg1.text);
+    // printf("nbytes text: %ld\n", strlen(msg1.text));
+    // printf("Messagem a enivar buffer= %s", buffer);
 
     // Sending message to server
-    if (write(socket_descriptor, &msg1, sizeof(msg1)) == -1)
+    if (write(socket_descriptor, buffer, sizeof(buffer)) == -1)
     {
         perror("error write\n");
         close(socket_descriptor);
@@ -75,16 +82,41 @@ int main(int argc, char *const argv[])
     }
 
     // Recebimento e processamento de msg2
-    if (read(socket_descriptor, &msg2, sizeof(msg2)) == -1)
+    if (read(socket_descriptor, buffer, sizeof(buffer)) == -1)
     {
         perror("receive message:");
         close(socket_descriptor);
         exit(1);
     }
-    printf("\n\nReceived message\n");
-    printf("Mensagem recebida: %s", msg2.text);
-    printf("Nome do estudante: %s", msg2.student_name);
-    printf("Tamanho da mensagem e nome de estudante: %ld\n", (strlen(msg2.text)+strlen(msg2.student_name)));
+    printf("Mensagem recebida buffer cliente: %s \n", buffer);
+
+
+    char *next_line = NULL;
+    nbytes_str = strtol(buffer, &next_line, 10);
+    next_line++;
+
+    char *next_line_after_text = strchr(next_line, '\n');
+    
+    memcpy(msg2.text, next_line, next_line_after_text - next_line);
+    next_line = next_line_after_text + 1;
+
+    nbytes_nome = strtol(next_line, &next_line_after_text, 10);
+    
+    next_line = next_line_after_text + 1;
+
+    strcpy(msg2.student_name, next_line);
+    // int num_bytes_str = strlen(msg1.student_id) + strlen(num_bytes) + 1;
+
+    // Preencher msg1.text
+    /*for (int i = 0; i < atoi(num_bytes) + 1; i++)
+    {
+        msg1.text[i] = buffer[num_bytes_str + i];
+    }*/
+
+    printf("----------Received message-----------------\n");
+    printf("Mensagem recebida: %s \n", msg2.text);
+    printf("Nome do estudante: %s\n", msg2.student_name);
+    printf("Tamanho da mensagem: %d\n", nbytes_str+nbytes_nome);
 
     close(socket_descriptor);
 
