@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     printf("Usage: %s <IP address> \n", argv[0]);
     exit(1);
   }
-
+  // getaddrinfo to get the server address
   getaddrinfo(argv[1], PORT, &hints, &a);
   sd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -35,8 +35,7 @@ int main(int argc, char *argv[])
   {
     printf("Digite uma mensagem: ");
     fgets(buffer, MAX_BUFFER, stdin);
-    sendto(sd, buffer, strlen(buffer), 0,
-           a->ai_addr, a->ai_addrlen);
+    sendto(sd, buffer, strlen(buffer), 0, a->ai_addr, a->ai_addrlen);
   }
 
   return 0;

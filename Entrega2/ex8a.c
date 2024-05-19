@@ -29,23 +29,23 @@ int main()
   hints.ai_family = AF_INET;  // IPv4
   getaddrinfo(NULL, PORT , &hints, &a); // getaddrinfo para obter o endereço do servidor
 
-  client_addr.sin_family = AF_INET;
-  client_addr.sin_port = htons(atoi(PORT));
-  client_addr.sin_addr.s_addr = inet_addr("Endereço IP do cliente");
+  // inicializar server_addr
+  client_addr.sin_family = AF_INET; // IPv4
+  client_addr.sin_port = htons(atoi(PORT)); // Porta do servidor
+  client_addr.sin_addr.s_addr = inet_addr("Endereço IP do cliente"); // Endereço IP do cliente
 
-  socketDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
-  bind(socketDescriptor, a->ai_addr, a->ai_addrlen);
+  socketDescriptor = socket(AF_INET, SOCK_DGRAM, 0); // criar socket UDP (SOCK_DGRAM) 
+  bind(socketDescriptor, a->ai_addr, a->ai_addrlen); // associar o socket ao endereço do servidor
   printf("connected to a client\n");
   while (1)
   {
     printf("Waiting for message...\n");
-    src_len = sizeof(client_addr);
-    n = recvfrom(socketDescriptor, buffer, sizeof(buffer) - 1, 0,
-                 &client_addr, &src_len);
-    buffer[n] = '\0';
+    src_len = sizeof(client_addr); // tamanho do endereço do cliente
+    n = recvfrom(socketDescriptor, buffer, sizeof(buffer) - 1, 0, 
+                 &client_addr, &src_len); // receber mensagem do cliente
+    buffer[n] = '\0'; // terminar a string
 
-    printf("Received message: %s", buffer);
-    sendto(socketDescriptor, buffer, n, 0, &src_addr, src_len);
+    printf("Received message: %s", buffer); // imprimir a mensagem recebida
 
     printf("Endereço IP do cliente: %s\n", inet_ntoa(client_addr.sin_addr));
     printf("Porto do cliente: %d\n", ntohs(client_addr.sin_port));

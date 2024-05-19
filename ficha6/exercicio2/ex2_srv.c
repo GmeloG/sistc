@@ -79,8 +79,6 @@ int main(int argc, char *argv[])
                     break;
                 
                 write(fdd, &c, 1);
-
-                write(new_socket_descriptor, &c, 1);
             }
             close(new_socket_descriptor);
             close(fdd);

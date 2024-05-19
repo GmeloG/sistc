@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
     // SIGPIPE is sent to the process if a write is made to a closed connection.
     // By default, SIGPIPE terminates the process. This makes the process to ignore the signal.
     signal(SIGPIPE, SIG_IGN);
-    socket_descriptor = my_create_server_socket(argv[1]);
+
+    socket_descriptor = my_create_server_socket(argv[1]); // Create a server socket
 
     while (1)
     {
@@ -39,8 +40,8 @@ int main(int argc, char *argv[])
 
         printf("Waiting connection\n");
 
-        addrlen = sizeof(clt_addr);
-        new_socket_descriptor = accept(socket_descriptor, &clt_addr, &addrlen);
+        addrlen = sizeof(clt_addr); // Accept the next connection
+        new_socket_descriptor = accept(socket_descriptor, &clt_addr, &addrlen); // Accept a new connection
         if (new_socket_descriptor < 0)
         {
             perror("accept");
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
             
             char filename[11];
             strcpy(filename, "fileXXXXXX");
-            int fdd = mkstemp(filename);
+            int fdd = mkstemp(filename); // Create a temporary file to store the received data from the client
             if (fdd == -1)
             {
                 perror("open destination");
@@ -80,7 +81,6 @@ int main(int argc, char *argv[])
                 
                 write(fdd, &c, 1);
 
-                write(new_socket_descriptor, &c, 1);
             }
             close(new_socket_descriptor);
             close(fdd);

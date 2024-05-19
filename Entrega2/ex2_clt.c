@@ -34,7 +34,7 @@ int main(int argc, char *const argv[])
     }
 
     // connect to server
-    int socket_descriptor = my_connect(argv[1], argv[2]);
+    int socket_descriptor = my_connect(argv[1], argv[2]); // connect to server
 
     // print local address
     print_socket_address(socket_descriptor);
@@ -51,9 +51,7 @@ int main(int argc, char *const argv[])
         write(socket_descriptor, buffer, n);
     }
 
-    // Receive server reply. Check the difference between both versions of the routine.
-    // recv_server_reply1(socket_descriptor);
-    // recv_server_reply2(socket_descriptor);
+    // close file and socket
     close(fds);
     close(socket_descriptor);
 
