@@ -74,7 +74,7 @@ int my_connect(char *servername, char *port)
     }
 
     // create socket
-    int s = socket(AF_INET, SOCK_STREAM, 0);
+    int s = socket(AF_INET, SOCK_STREAM, 0); // TCP socket (SOCK_STREAM)
     if (s == -1)
     {
         perror("socket");
@@ -82,7 +82,7 @@ int my_connect(char *servername, char *port)
     }
 
     // connect to server
-    r = connect(s, addrs->ai_addr, addrs->ai_addrlen);
+    r = connect(s, addrs->ai_addr, addrs->ai_addrlen); // connect to server
     if (r == -1)
     {
         perror("connect");

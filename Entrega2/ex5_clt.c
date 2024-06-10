@@ -83,8 +83,8 @@ int main(int argc, char *const argv[])
     // Recebimento e processamento de msg2
     if (read(socket_descriptor, buffer, sizeof(buffer)) == -1)
     {
-        perror("receive message:");
-        close(socket_descriptor);
+        perror("receive message:"); // print error message
+        close(socket_descriptor); 
         exit(1);
     }
 
